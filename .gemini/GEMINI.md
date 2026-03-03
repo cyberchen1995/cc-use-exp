@@ -499,6 +499,14 @@ docker run -d nginx
 
 ---
 
+## 并发与数据库最佳实践
+
+1.  **Get-Or-Create 并发**：禁止 `check-then-act`。推荐使用**唯一索引兜底 + 异常捕获**。
+2.  **N+1 查询防范**：禁止在循环中调用 Repository。推荐**循环外批量查询 + 内存匹配**。
+3.  **原子更新**：禁止 `read-modify-write` 更新余额/库存。推荐使用 **UPDATE SET balance = balance - :amount**。
+
+---
+
 ## 技术栈偏好
 
 | 场景 | 首选 | 备选 |

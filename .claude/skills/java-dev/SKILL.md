@@ -371,6 +371,7 @@ log.debug("Finding user by id: " + userId);
 | `references/java-style.md` | 命名约定、异常处理、Spring Boot、测试规范 |
 | `references/collections.md` | 不可变集合（Guava）、字符串分割 |
 | `references/concurrency.md` | 线程池配置、CompletableFuture 超时 |
+| `references/concurrency-db-patterns.md` | Get-Or-Create 并发、N+1 防范、原子更新 |
 | `references/code-patterns.md` | 卫语句、枚举优化、策略工厂模式 |
 | `references/date-time.md` | 日期加减、账期计算、禁止月末对齐 |
 
