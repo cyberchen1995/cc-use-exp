@@ -1,0 +1,33 @@
+description = "检查 ToolSearch（WebSearch）是否可用"
+
+prompt = """
+验证当前环境是否支持 ToolSearch/WebSearch 工具。
+
+## 执行步骤
+
+### 1. 尝试搜索
+使用搜索工具搜索关键词 "AI coding assistant 2026"。
+
+### 2. 判断结果
+
+如果搜索成功返回结果，输出：
+
+✅ ToolSearch 可用
+搜索功能正常。
+
+好处：
+- 大幅减少 token 占用
+- 模型表现更好
+- 对话轮次更多
+
+如果搜索失败或报错，输出：
+
+❌ ToolSearch 不可用
+
+可能原因：
+1. 使用第三方中转地址，域名未通过白名单检查
+2. 版本不支持
+
+解决方案：
+  python tools/patch-toolsearch.py
+"""

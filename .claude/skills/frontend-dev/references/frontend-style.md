@@ -791,16 +791,6 @@ npm install -D rollup-plugin-visualizer
 
 ---
 
-## 规则溯源要求
-
-当回复明确受到本规则约束时，在回复末尾声明：
-
-```
-> 📋 本回复遵循规则：`frontend-style.md` - [具体章节]
-```
-
----
-
 ## 参考资料
 
 - [Vue 3 官方文档](https://vuejs.org/)

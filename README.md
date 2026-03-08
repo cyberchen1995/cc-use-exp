@@ -9,7 +9,7 @@
 >
 > 按费力度从低到高，用最少操作获得最大帮助
 
-[![version](https://img.shields.io/badge/version-1.0.14-blue.svg)](https://github.com/doccker/cc-use-exp)
+[![version](https://img.shields.io/badge/version-1.0.15-blue.svg)](https://github.com/doccker/cc-use-exp)
 [![license](https://img.shields.io/badge/license-Custom-green.svg)](./LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Config-orange.svg)](https://docs.anthropic.com/claude-code)
 [![Gemini CLI](https://img.shields.io/badge/Gemini_CLI-Config-purple.svg)](https://github.com/google-gemini/gemini-cli)
@@ -27,7 +27,8 @@
 - **Part 1: Claude Code**
   - [快速开始](#1-快速开始)
   - [常见场景速查](#2-常见场景速查)
-  - [目录结构](#5-目录结构)
+  - [ToolSearch 支持](#3-toolsearch-支持)
+  - [目录结构](#6-目录结构)
 - **Part 2: Gemini CLI**
   - [快速开始](#1-快速开始-1)
   - [前端场景速查](#2-前端场景速查)
@@ -97,12 +98,12 @@
 
 **macOS/Linux**：
 ```bash
-./sync-config.sh
+./tools/sync-config.sh
 ```
 
 **Windows**：
 ```cmd
-sync-config.bat
+tools\sync-config.bat
 ```
 
 脚本会自动将 `.claude/` 和 `.gemini/` 同步到用户根目录（`~/.claude/` 和 `~/.gemini/`），文件冲突时提供以下选项：
@@ -188,6 +189,7 @@ cp .gemini/settings.json ~/.gemini/
 | `python-dev` | 操作 `.py` 文件 | 类型注解、Pydantic、pytest、uv 工具链 |
 | `bash-style` | 操作 `.sh/Dockerfile/Makefile/.md` 等 | 注释规范、tee 写入、heredoc、脚本规范 |
 | `ops-safety` | 执行系统命令、服务器运维 | 风险说明、回滚方案、问题排查原则 |
+| `simplify` | `/simplify` 或描述"简化代码" | 代码简化审查、全项目文件行数扫描 |
 
 **效果示例**：
 - 写 Go 代码时，自动遵循 Effective Go 规范
@@ -227,6 +229,7 @@ cp .gemini/settings.json ~/.gemini/
 | `/project-scan` | 扫描项目生成配置（CLAUDE.md/restart.sh/ignore/Docker） | `/project-scan` |
 | `/style-extract` | 从代码或设计图提取样式变量 | `/style-extract` |
 | `/ruanzhu` | 生成软著源代码 DOCX 文件 | `/ruanzhu "系统名称" 60` |
+| `/check-toolsearch` | 检查 ToolSearch/WebSearch 是否可用 | `/check-toolsearch` |
 | `/status` | 显示当前配置状态（Rules/Skills/LSP） | `/status` |
 
 ---
@@ -262,15 +265,56 @@ cp .gemini/settings.json ~/.gemini/
 
 ---
 
-## 3. 最佳实践
+## 3. ToolSearch 支持
 
-### 3.1 让自动化为你工作
+### 什么是 ToolSearch
+
+ToolSearch 让 Claude Code 按需搜索工具定义，而不是把所有工具定义塞进上下文。好处：
+
+- **大幅减少 token 占用** —— MCP 工具多的用户，tools 块动辄占据数万甚至数十万 tokens
+- **模型表现更好** —— 上下文更干净，模型注意力不被大量工具定义稀释
+- **对话轮次更多** —— 同样的上下文窗口可以增加数轮对话
+
+### 谁需要关注
+
+| 用户类型 | 是否需要操作 |
+|---------|------------|
+| 官方 API 直连 | 无需操作，自动支持 |
+| 第三方中转地址 | 需要执行补丁脚本 |
+
+### 使用方法
+
+**1. 检查当前状态**
+
+```bash
+# 在 Claude Code 中执行
+/check-toolsearch
+```
+
+**2. 如果不可用，执行补丁**
+
+```bash
+python tools/patch-toolsearch.py          # 交互式选择
+python tools/patch-toolsearch.py --auto   # 自动补丁所有安装
+python tools/patch-toolsearch.py --check  # 仅检查状态
+python tools/patch-toolsearch.py --restore # 从备份恢复
+```
+
+**3. 重启 Claude Code 生效**
+
+> **注意**：Claude Code 更新后补丁会被覆盖，需重新执行。脚本支持自动探测 bun/npm/pnpm/VS Code/Cursor 安装。
+
+---
+
+## 4. 最佳实践
+
+### 4.1 让自动化为你工作
 
 - **不要干预 Rules**：它们在后台保护你，比如防止 Claude 修改测试
 - **不要手动加载 Skills**：操作相关文件时自动生效
 - **相信防御机制**：复杂任务会自动要求确认计划后再执行
 
-### 3.2 避免的做法
+### 4.2 避免的做法
 
 - ❌ 不要绕过 Rules 的保护机制
 - ❌ 不要在简单任务上使用复杂命令
@@ -278,7 +322,7 @@ cp .gemini/settings.json ~/.gemini/
 
 ---
 
-## 4. 常见问题
+## 5. 常见问题
 
 ### Q: 为什么 Claude 总是先说明计划再执行？
 
@@ -298,7 +342,7 @@ A: 在 `.claude/skills/` 下创建新目录（如 `rust-dev/`），添加 `SKILL
 
 ---
 
-## 5. 目录结构
+## 6. 目录结构
 
 ```
 .claude/
@@ -316,16 +360,23 @@ A: 在 `.claude/skills/` 下创建新目录（如 `rust-dev/`），添加 `SKILL
 │   ├── python-dev/
 │   ├── bash-style/               # Bash 完整规范
 │   ├── ops-safety/               # 运维安全完整规范
+│   ├── simplify/                 # 代码简化 + 文件行数扫描
 │   └── ruanzhu/                  # 软著源代码生成
 ├── commands/                     # 命令：显式调用
 │   ├── fix.md
 │   ├── code-review.md
+│   ├── check-toolsearch.md      # ToolSearch 可用性检查
 │   ├── debug.md
 │   ├── ruanzhu.md                # 软著源代码 DOCX 生成
 │   ├── status.md
 │   └── ...
 └── templates/                    # 模板文件
     └── ruanzhu/                  # 软著生成脚本
+
+tools/                            # 工具脚本（不同步到 ~/.claude/）
+├── patch-toolsearch.py           # ToolSearch 域名限制解除补丁
+├── sync-config.sh                # 配置同步脚本（macOS/Linux）
+└── sync-config.bat               # 配置同步脚本（Windows）
 ```
 
 ### 核心概念
@@ -359,7 +410,7 @@ A: 在 `.claude/skills/` 下创建新目录（如 `rust-dev/`），添加 `SKILL
 
 ---
 
-## 6. 开发指南
+## 7. 开发指南
 
 ### LSP 服务器配置（v2.0.67+ 支持）
 
@@ -480,7 +531,7 @@ claude
 
 ---
 
-## 7. 部署方法
+## 8. 部署方法
 
 ### 工作原理
 
@@ -519,11 +570,11 @@ cp .claude/CLAUDE.md ~/.claude/
 
 ---
 
-## 8. 版本记录
+## 9. 版本记录
 
 ---
 
-## 9. 参考资料
+## 10. 参考资料
 - [Claude Code 官方文档](https://docs.anthropic.com/claude-code)
 
 ---
@@ -583,6 +634,7 @@ GEMINI.md 自动加载，提供以下保护：
 | `/quick-review` | 快速审查 | `/quick-review` |
 | `/commit-msg` | 生成 git commit message | `/commit-msg` 或 `/commit-msg all` |
 | `/debug` | 复杂问题排查 | `/debug 表格数据不显示` |
+| `/check-toolsearch` | 检查 ToolSearch 是否可用 | `/check-toolsearch` |
 
 ---
 
@@ -738,6 +790,7 @@ A: 分步骤处理：
     ├── code-review.toml
     ├── quick-review.toml
     ├── commit-msg.toml # 生成 commit message
+    ├── check-toolsearch.toml # ToolSearch 可用性检查
     └── debug.toml
 ```
 
