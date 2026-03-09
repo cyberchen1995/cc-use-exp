@@ -1,13 +1,13 @@
 ---
-name: simplify
+name: size-check
 description: Review changed code for reuse, quality, and efficiency, then fix any issues found. Also scans project files for size limit violations.
 ---
 
-# Simplify - 代码简化与文件行数检查
+# Size Check - 代码简化与文件行数检查
 
 ## 触发方式
 
-用户执行 `/simplify` 或描述"简化代码"、"检查文件大小"时触发。
+用户执行 `/size-check` 或描述"简化代码"、"检查文件大小"时触发。
 
 ---
 
@@ -91,7 +91,39 @@ description: Review changed code for reuse, quality, and efficiency, then fix an
 - 配置：`.toml`、`.json`、`.yaml`、`.yml`（命令/配置文件不适用代码行数限制）
 - 文档：`.md`（Markdown 无硬性行数限制，但检测重复章节）
 
-### 安全原则
+---
+
+## 功能 3：CSS 提取检查
+
+### 触发条件
+
+扫描 Vue/TSX/JSX 文件时，检测内联 `<style>` 块行数。
+
+### 检查规则
+
+| 检查项 | 条件 | 建议 |
+|--------|------|------|
+| 内联样式过长 | `<style>` 块超过 30 行 | 提取公共样式到 `assets/styles/` |
+| 非 scoped 全局样式 | Vue SFC 中存在 `<style>`（无 scoped） | 移到 `assets/styles/common.scss` |
+
+**不触发**：`<style scoped>` 且行数 ≤ 30 行的组件级样式。
+
+### 输出格式
+
+在文件行数扫描结果中追加：
+
+```markdown
+### CSS 提取建议
+
+| 文件 | <style> 行数 | 类型 | 建议 |
+|------|-------------|------|------|
+| src/views/User.vue | 45 | scoped | 提取公共部分（变量/mixin）到 assets/styles/ |
+| src/views/Home.vue | 12 | 非 scoped | 移到 assets/styles/common.scss |
+```
+
+---
+
+## 安全原则
 
 - **只报告，不自动重构** —— 超限文件给出拆分建议，由用户确认后再执行
 - **不改变现有行为** —— 拆分后的入口文件保持原有接口
@@ -102,5 +134,5 @@ description: Review changed code for reuse, quality, and efficiency, then fix an
 ## 规则溯源
 
 ```
-> 📋 本回复遵循：`simplify` - [功能1/功能2]
+> 📋 本回复遵循：`size-check` - [功能1/功能2/功能3]
 ```

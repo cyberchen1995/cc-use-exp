@@ -192,7 +192,7 @@ cp .gemini/settings.json ~/.gemini/
 | `python-dev` | 操作 `.py` 文件 | 类型注解、Pydantic、pytest、uv 工具链 |
 | `bash-style` | 操作 `.sh/Dockerfile/Makefile/.md` 等 | 注释规范、tee 写入、heredoc、脚本规范 |
 | `ops-safety` | 执行系统命令、服务器运维 | 风险说明、回滚方案、问题排查原则 |
-| `simplify` | `/simplify` 或描述"简化代码" | 代码简化审查、全项目文件行数扫描 |
+| `size-check` | `/size-check` 或描述"简化代码" | 代码简化审查、全项目文件行数扫描 |
 
 **效果示例**：
 - 写 Go 代码时，自动遵循 Effective Go 规范
@@ -208,26 +208,26 @@ cp .gemini/settings.json ~/.gemini/
 | 命令 | 用途 | 使用示例 |
 |------|------|---------|
 | `/fix` | 快速修复 Bug | `/fix 登录接口返回 500` |
-| `/quick-review` | 快速审查（git diff + 简要意见） | `/quick-review` |
-| `/code-review` | 正式代码审查 | `/code-review` |
-| `/debug` | 复杂问题排查（复现→假设→验证→修复） | `/debug 定时任务不执行` |
+| `/fix debug` | 复杂问题排查（复现→假设→验证→修复） | `/fix debug 定时任务不执行` |
+| `/review` | 正式代码审查 | `/review` |
+| `/review quick` | 快速审查（git diff + 简要意见） | `/review quick` |
 | `/commit-msg` | 生成 git commit message | `/commit-msg` 或 `/commit-msg all` |
 
 #### 中频命令（按需使用）
 
 | 命令 | 用途 | 使用示例 |
 |------|------|---------|
-| `/security-review` | 安全审查当前分支代码 | `/security-review` |
+| `/review security` | 安全审查当前分支代码 | `/review security` |
 | `/new-feature` | 新功能全流程（需求→设计→实现） | `/new-feature 用户导出功能` |
-| `/design-doc` | 生成技术设计文档框架 | `/design-doc 用户权限模块` |
-| `/requirement-doc` | 生成需求文档框架 | `/requirement-doc 报表功能` |
+| `/design doc` | 生成技术设计文档框架 | `/design doc 用户权限模块` |
+| `/requirement doc` | 生成需求文档框架 | `/requirement doc 报表功能` |
 
 #### 低频命令（特定场景）
 
 | 命令 | 用途 | 使用示例 |
 |------|------|---------|
-| `/requirement-interrogate` | 需求极刑审问，挖掘逻辑漏洞 | `/requirement-interrogate 用户要导出数据` |
-| `/design-checklist` | 生成设计质量检查清单 | `/design-checklist` |
+| `/requirement interrogate` | 需求极刑审问，挖掘逻辑漏洞 | `/requirement interrogate 用户要导出数据` |
+| `/design checklist` | 生成设计质量检查清单 | `/design checklist` |
 | `/project-init` | 为新项目初始化 Claude Code 配置 | `/project-init` |
 | `/project-scan` | 扫描项目生成配置（CLAUDE.md/restart.sh/ignore/Docker） | `/project-scan` |
 | `/style-extract` | 从代码或设计图提取样式变量 | `/style-extract` |
@@ -243,27 +243,27 @@ cp .gemini/settings.json ~/.gemini/
 |------|---------|--------|
 | 日常写代码 | 直接写，Rules + Skills 自动生效 | ⭐ |
 | 修个小 Bug | `/fix 问题描述` | ⭐⭐ |
-| 提交前快速看看 | `/quick-review` | ⭐⭐ |
+| 提交前快速看看 | `/review quick` | ⭐⭐ |
 | 生成 commit message | `/commit-msg` | ⭐⭐ |
-| 正式代码审查 | `/code-review` | ⭐⭐ |
-| 复杂 Bug 排查 | `/debug 问题描述` | ⭐⭐⭐ |
-| 安全审查 | `/security-review` | ⭐⭐⭐ |
+| 正式代码审查 | `/review` | ⭐⭐ |
+| 复杂 Bug 排查 | `/fix debug 问题描述` | ⭐⭐⭐ |
+| 安全审查 | `/review security` | ⭐⭐⭐ |
 | 开发新功能 | `/new-feature 功能名` | ⭐⭐⭐ |
 | 新项目初始化 | `/project-init` | ⭐⭐⭐ |
 
 ```
 遇到 Bug？
 ├─ 简单 Bug → /fix 问题描述
-└─ 复杂 Bug → /debug 问题描述
+└─ 复杂 Bug → /fix debug 问题描述
 
 代码审查？
-├─ 快速看看 → /quick-review
-├─ 正式审查 → /code-review
-└─ 安全审查 → /security-review
+├─ 快速看看 → /review quick
+├─ 正式审查 → /review
+└─ 安全审查 → /review security
 
 新功能？
 ├─ 完整流程 → /new-feature 功能名
-└─ 只要设计 → /design-doc 模块名
+└─ 只要设计 → /design doc 模块名
 ```
 
 ---
@@ -363,13 +363,14 @@ A: 在 `.claude/skills/` 下创建新目录（如 `rust-dev/`），添加 `SKILL
 │   ├── python-dev/
 │   ├── bash-style/               # Bash 完整规范
 │   ├── ops-safety/               # 运维安全完整规范
-│   ├── simplify/                 # 代码简化 + 文件行数扫描
+│   ├── size-check/               # 代码简化 + 文件行数扫描
 │   └── ruanzhu/                  # 软著源代码生成
 ├── commands/                     # 命令：显式调用
-│   ├── fix.md
-│   ├── code-review.md
+│   ├── fix.md                    # 快速修复 / 系统化调试
+│   ├── review.md                 # 代码审查（full/quick/security）
+│   ├── design.md                 # 技术设计（doc/checklist）
+│   ├── requirement.md            # 需求分析（doc/interrogate）
 │   ├── check-toolsearch.md      # ToolSearch 可用性检查
-│   ├── debug.md
 │   ├── ruanzhu.md                # 软著源代码 DOCX 生成
 │   ├── status.md
 │   └── ...
@@ -633,10 +634,10 @@ GEMINI.md 自动加载，提供以下保护：
 | `/layout-check` | 检查页面布局一致性 | `/layout-check src/views/` |
 | `/vue-split` | 拆分大型 Vue 文件 | `/vue-split src/views/Home.vue` |
 | `/fix` | 快速修复前端 Bug | `/fix 按钮点击无响应` |
-| `/code-review` | 审查前端代码 | `/code-review` |
-| `/quick-review` | 快速审查 | `/quick-review` |
+| `/review` | 审查前端代码 | `/review` |
+| `/review quick` | 快速审查 | `/review quick` |
 | `/commit-msg` | 生成 git commit message | `/commit-msg` 或 `/commit-msg all` |
-| `/debug` | 复杂问题排查 | `/debug 表格数据不显示` |
+| `/fix debug` | 复杂问题排查 | `/fix debug 表格数据不显示` |
 | `/check-toolsearch` | 检查 ToolSearch 是否可用 | `/check-toolsearch` |
 
 ---
@@ -650,10 +651,10 @@ GEMINI.md 自动加载，提供以下保护：
 | 布局一致性检查 | `/layout-check` | ⭐⭐ |
 | Vue 文件过大 | `/vue-split 文件路径` | ⭐⭐ |
 | 修复样式问题 | `/fix 问题描述` | ⭐⭐ |
-| 组件代码审查 | `/code-review` | ⭐⭐ |
+| 组件代码审查 | `/review` | ⭐⭐ |
 | 查 Vue/Element 文档 | 让 Gemini 调用 Context7 | ⭐ |
 | 响应式适配 | 描述断点需求 | ⭐⭐ |
-| 复杂交互调试 | `/debug 问题描述` | ⭐⭐⭐ |
+| 复杂交互调试 | `/fix debug 问题描述` | ⭐⭐⭐ |
 
 ```
 布局问题？
@@ -663,7 +664,7 @@ GEMINI.md 自动加载，提供以下保护：
 
 组件开发？
 ├─ 新组件 → 描述需求，让 Gemini 生成
-└─ 改现有 → 先 /code-review，再修改
+└─ 改现有 → 先 /review，再修改
 
 样式问题？
 ├─ 单个元素 → /fix 样式描述
@@ -771,7 +772,7 @@ A: 支持以下输入方式：
 A: 分步骤处理：
 1. 先让 Gemini 生成组件框架
 2. 逐个功能点完善
-3. 最后 `/code-review` 检查
+3. 最后 `/review` 检查
 
 ---
 
@@ -952,3 +953,15 @@ cp .gemini/settings.json ~/.gemini/
 未经授权的商业使用，作者保留追究法律责任的权利。
 
 详见 [LICENSE](./LICENSE)
+
+---
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=doccker/cc-use-exp&type=Date)](https://star-history.com/#doccker/cc-use-exp&Date)
+
+## Contributors
+
+<a href="https://github.com/doccker/cc-use-exp/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=doccker/cc-use-exp" />
+</a>

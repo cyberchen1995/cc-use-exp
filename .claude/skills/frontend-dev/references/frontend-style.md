@@ -263,6 +263,56 @@ const props = defineProps({
 </style>
 ```
 
+### 3.6 样式组织规范
+
+**核心原则**：全局/共享样式统一放 `src/assets/styles/`，组件级 scoped 样式保留在 SFC 内。
+
+#### 目录结构
+
+```
+src/assets/styles/
+├── variables.scss      # 设计变量（颜色、字号、间距、断点）
+├── mixins.scss         # 可复用 mixin（响应式、文本截断等）
+├── reset.scss          # 浏览器重置 / normalize
+├── common.scss         # 全局公共样式（布局工具类、通用过渡）
+└── index.scss          # 统一入口，按顺序导入上述文件
+```
+
+#### 导入方式
+
+```typescript
+// main.ts - 统一导入全局样式
+import '@/assets/styles/index.scss'
+```
+
+```scss
+// assets/styles/index.scss
+@import './reset.scss';
+@import './variables.scss';
+@import './mixins.scss';
+@import './common.scss';
+```
+
+```vue
+<!-- 组件中使用变量/mixin 时，通过 vite 自动注入，无需手动 import -->
+<!-- vite.config.ts 配置 css.preprocessorOptions.scss.additionalData -->
+<style scoped lang="scss">
+.card {
+  color: $text-primary;
+  @include text-ellipsis;
+}
+</style>
+```
+
+#### 规则
+
+| 规则 | 说明 |
+|------|------|
+| 全局样式放 `assets/styles/` | 变量、mixin、reset、公共类 |
+| scoped 样式留在组件内 | 组件私有样式使用 `<style scoped>` |
+| 禁止在组件中写非 scoped 全局样式 | 需要全局样式时加到 `common.scss` |
+| 内联 `<style>` 块不超过 30 行 | 超过时提取公共部分到 `assets/styles/` |
+
 ---
 
 ## 4. 状态管理（Pinia）

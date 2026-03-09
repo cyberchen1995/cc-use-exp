@@ -102,7 +102,8 @@
 │   ├── frontend-dev/
 │   └── python-dev/
 └── commands/          # 用户命令
-    ├── code-review.md
-    ├── design-*.md
+    ├── fix.md
+    ├── review.md
+    ├── design.md
     └── ...
 ```

@@ -79,7 +79,7 @@ description: 新功能全流程（需求审问 → 设计 → 实现）
 
 ### 第 4 步：自审 + 归档
 
-1. 执行 `/quick-review`
+1. 执行 `/review quick`
 2. 更新任务文件状态为「已完成」
 3. 将任务文件移动到 `.claude/tasks/archived/`
 
