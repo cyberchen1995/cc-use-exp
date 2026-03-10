@@ -2,7 +2,7 @@
 
 版本：v1.0
 作者：wwj
-更新：2026-01-04
+更新：2026-03-10
 
 ---
 
@@ -94,7 +94,7 @@
 ```
 ~/.claude/
 ├── CLAUDE.md          # 本文件 - 核心配置
-├── rules/             # 始终加载的规则
+├── rules/             # 规则（部分按 paths 按需加载）
 │   └── claude-code-defensive.md
 ├── skills/            # 按需加载的技能
 │   ├── go-dev/

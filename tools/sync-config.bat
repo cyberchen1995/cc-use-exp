@@ -63,6 +63,46 @@ if exist "%SCRIPT_DIR%\.gemini" (
     if exist "%SCRIPT_DIR%\.gemini\settings.json" copy /y "%SCRIPT_DIR%\.gemini\settings.json" "%HOME_DIR%\.gemini\" >nul
 
     echo   [√] commands/ skills/ rules/ GEMINI.md settings.json
+
+    REM --- MCP 扩展检测 ---
+    set "EXT_JSON=%SCRIPT_DIR%\.gemini\extensions.json"
+    if exist "!EXT_JSON!" (
+        echo.
+        echo [Gemini CLI] 正在检测推荐扩展...
+
+        REM 获取已安装扩展列表
+        set "INSTALLED_EXTS="
+        for /f "delims=" %%a in ('gemini extensions list 2^>nul') do (
+            set "INSTALLED_EXTS=!INSTALLED_EXTS! %%a"
+        )
+
+        REM 使用 python3 解析 JSON 检查缺失
+        set "HAS_MISSING=0"
+        for /f "tokens=1,2,3 delims=|" %%a in ('python -c "import json,sys;data=json.load(open(sys.argv[1]));installed=sys.argv[2];[print(e['id']+'|'+e['name']+'|'+e['url']) for e in data.get('recommendations',[]) if e['id'] not in installed]" "!EXT_JSON!" "!INSTALLED_EXTS!" 2^>nul') do (
+            if "!HAS_MISSING!"=="0" (
+                echo 检测到以下推荐扩展尚未安装：
+                set "HAS_MISSING=1"
+            )
+            echo   - %%b ^(%%a^)
+        )
+
+        if "!HAS_MISSING!"=="1" (
+            echo.
+            set /p "confirm=是否现在安装上述缺失的扩展？[Y/n] "
+            if /i "!confirm!"=="" set "confirm=Y"
+            if /i "!confirm!"=="Y" (
+                for /f "tokens=1,2,3 delims=|" %%a in ('python -c "import json,sys;data=json.load(open(sys.argv[1]));installed=sys.argv[2];[print(e['id']+'|'+e['name']+'|'+e['url']) for e in data.get('recommendations',[]) if e['id'] not in installed]" "!EXT_JSON!" "!INSTALLED_EXTS!" 2^>nul') do (
+                    echo 正在安装 %%b...
+                    gemini extensions install "%%c"
+                )
+                echo [√] 扩展安装完成
+            ) else (
+                echo 已跳过扩展安装。你可以之后手动安装。
+            )
+        ) else (
+            echo [√] 所有推荐扩展已安装
+        )
+    )
 ) else (
     echo [Gemini CLI] 源目录不存在，跳过
 )

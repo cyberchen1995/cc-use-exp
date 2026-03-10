@@ -62,6 +62,55 @@ if [[ -d "${SCRIPT_DIR}/.gemini" ]]; then
     cp "${SCRIPT_DIR}/.gemini/settings.json" ~/.gemini/
 
     echo -e "${GREEN}  ✓ commands/ skills/ rules/ GEMINI.md settings.json${NC}"
+
+    # --- MCP 扩展检测 ---
+    EXT_JSON="${SCRIPT_DIR}/.gemini/extensions.json"
+    if [[ -f "$EXT_JSON" ]]; then
+        echo ""
+        echo -e "${YELLOW}[Gemini CLI] 正在检测推荐扩展...${NC}"
+        
+        # 获取当前已安装的扩展列表
+        INSTALLED_EXTS=$(gemini extensions list 2>/dev/null || echo "")
+        
+        # 使用 python3 解析 JSON 并检查缺失
+        MISSING_EXTS=$(python3 -c "
+import json, sys
+try:
+    with open(sys.argv[1]) as f:
+        data = json.load(f)
+    installed = sys.argv[2]
+    for ext in data.get('recommendations', []):
+        if ext['id'] not in installed:
+            print(ext['id'] + '|' + ext['name'] + '|' + ext['url'])
+except Exception:
+    pass
+" "$EXT_JSON" "$INSTALLED_EXTS")
+
+        if [[ -n "$MISSING_EXTS" ]]; then
+            echo -e "${YELLOW}检测到以下推荐扩展尚未安装：${NC}"
+            IFS=$'\n'
+            for item in $MISSING_EXTS; do
+                IFS='|' read -r id name cmd <<< "$item"
+                echo -e "  - ${YELLOW}$name${NC} ($id)"
+            done
+            
+            echo ""
+            read -p "是否现在安装上述缺失的扩展？[Y/n] " confirm
+            if [[ "$confirm" =~ ^[Yy]$ || "$confirm" == "" ]]; then
+                IFS=$'\n'
+                for item in $MISSING_EXTS; do
+                    IFS='|' read -r id name url <<< "$item"
+                    echo -e "${GREEN}正在安装 $name...${NC}"
+                    gemini extensions install "$url"
+                done
+                echo -e "${GREEN}✓ 扩展安装完成${NC}"
+            else
+                echo -e "${YELLOW}已跳过扩展安装。你可以之后手动安装。${NC}"
+            fi
+        else
+            echo -e "${GREEN}✓ 所有推荐扩展已安装${NC}"
+        fi
+    fi
 else
     echo -e "${YELLOW}[Gemini CLI] 源目录不存在，跳过${NC}"
 fi

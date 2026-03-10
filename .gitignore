@@ -16,3 +16,5 @@ out/
 publish.sh
 
 .claude/tasks/
+.gemini/GEMINI.local.md
+.claude/CLAUDE.local.md

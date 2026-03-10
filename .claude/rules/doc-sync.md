@@ -1,5 +1,8 @@
 ---
-paths: "**/*"
+paths:
+  - ".claude/**/*"
+  - "README.md"
+  - "CLAUDE.md"
 ---
 # 文档同步规则
 

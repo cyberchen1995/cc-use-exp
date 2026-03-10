@@ -640,6 +640,26 @@ GEMINI.md 自动加载，提供以下保护：
 | `/fix debug` | 复杂问题排查 | `/fix debug 表格数据不显示` |
 | `/check-toolsearch` | 检查 ToolSearch 是否可用 | `/check-toolsearch` |
 
+### 1.4 MCP 扩展推荐（声明式安装）
+
+本项目通过 `.gemini/extensions.json` 声明了推荐的扩展。
+
+| 扩展 | 用途 | 安装地址 |
+|------|------|---------|
+| `context7` | 精准文档查询 | [GitHub](https://github.com/upstash/context7) |
+| `chrome-devtools` | 前端真机调试 | [GitHub](https://github.com/ChromeDevTools/chrome-devtools-mcp) |
+
+**推荐安装方式：**
+运行 `./tools/sync-config.sh`，脚本会自动检测缺失的扩展并引导你一键安装。
+
+**手动一键安装：**
+```bash
+gemini extensions install https://github.com/upstash/context7 && \
+gemini extensions install https://github.com/ChromeDevTools/chrome-devtools-mcp
+```
+
+更多扩展请访问：[Gemini Extensions 商店](https://geminicli.com/extensions/)
+
 ---
 
 ## 2. 前端场景速查

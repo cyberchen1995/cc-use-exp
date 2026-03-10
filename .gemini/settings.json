@@ -1,5 +1,10 @@
 {
   "$schema": "https://geminicli.com/schemas/settings.json",
+  "model_aliases": {
+    "pro": "gemini-3.1-pro-preview",
+    "flash": "gemini-3-flash-preview"
+  },
+  "model": "pro",
   "core": {
     "checkForUpdates": true,
     "theme": "Default"
@@ -27,14 +32,16 @@
   },
   "mcpServers": {
     "context7": {
-      "httpUrl": "https://mcp.context7.com/mcp"
+      "httpUrl": "${CONTEXT7_URL:-https://mcp.context7.com/mcp}",
+      "trust": true
     },
     "sequential-thinking": {
       "command": "npx",
       "args": [
         "-y",
         "@modelcontextprotocol/server-sequential-thinking"
-      ]
+      ],
+      "trust": true
     },
     "chrome-dev-tools": {
       "command": "npx",
@@ -56,6 +63,8 @@
   },
   "ui": {
     "inlineThinkingMode": "full",
-    "showStatusInTitle": true
+    "showStatusInTitle": true,
+    "theme": "Default Light",
+    "hideContextSummary": true
   }
 }

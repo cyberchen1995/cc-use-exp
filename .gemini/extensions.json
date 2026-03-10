@@ -1,0 +1,20 @@
+{
+  "recommendations": [
+    {
+      "id": "context7",
+      "name": "Upstash Context7",
+      "version": "1.2.0",
+      "url": "https://github.com/upstash/context7",
+      "description": "提供精准的第三方库文档查询和代码示例（Context7 增强）",
+      "install_cmd": "gemini extensions install https://github.com/upstash/context7"
+    },
+    {
+      "id": "chrome-devtools-mcp",
+      "name": "Chrome DevTools MCP",
+      "version": "1.0.5",
+      "url": "https://github.com/ChromeDevTools/chrome-devtools-mcp",
+      "description": "用于前端页面真机调试、Lighthouse 审计与性能性能监控",
+      "install_cmd": "gemini extensions install https://github.com/ChromeDevTools/chrome-devtools-mcp"
+    }
+  ]
+}

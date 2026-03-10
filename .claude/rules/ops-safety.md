@@ -1,5 +1,9 @@
 ---
-paths: "**/*"
+paths:
+  - "**/*.sh"
+  - "**/Dockerfile"
+  - "**/docker-compose*.yml"
+  - "**/Makefile"
 ---
 # 运维安全核心规则
 
