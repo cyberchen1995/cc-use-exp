@@ -18,3 +18,6 @@ publish.sh
 .claude/tasks/
 .gemini/GEMINI.local.md
 .claude/CLAUDE.local.md
+
+# Gemini CLI local environment configuration
+.gemini/.env

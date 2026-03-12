@@ -4,9 +4,3 @@ toolName = "get_internal_docs"
 decision = "allow"
 priority = 100
 description = "允许 CLI Help Agent 读取内部帮助文档"
-
-[[rule]]
-toolName = "get-internal-docs"
-decision = "allow"
-priority = 100
-description = "允许 CLI Help Agent 读取内部帮助文档 (连字符兼容)"

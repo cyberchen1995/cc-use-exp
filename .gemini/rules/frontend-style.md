@@ -37,4 +37,13 @@ paths:
 
 ---
 
+## 4. 严格模式与变量约束 (Strict Mode)
+
+> 默认所有项目均已开启 TypeScript 严格模式（如 `noUnusedLocals`）。
+
+- **严禁无用变量**：在编写 Vue 模板的 `v-for` 循环时，如果循环体内不使用 `index`，**绝对禁止**声明 `(item, index)`，必须直接写为 `item in list`。
+- **严禁无用导入**：在 `<script setup>` 中，代码重构或删减后，必须同步清理未使用的 `import` 语句和局部变量。
+
+---
+
 > 📋 本回复遵循：`frontend-style` - [章节]

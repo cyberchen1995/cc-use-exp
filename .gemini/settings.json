@@ -3,6 +3,7 @@
   "model": {
     "name": "flash"
   },
+  "timeout": 120000,
   "model_aliases": {
     "pro": "gemini-3.1-pro-preview",
     "flash": "gemini-3-flash-preview"
@@ -11,7 +12,7 @@
     "plan": true
   },
   "core": {
-    "checkForUpdates": true,
+    "checkForUpdates": false,
     "theme": "Default"
   },
   "models": {
@@ -38,6 +39,7 @@
   "mcpServers": {
     "context7": {
       "httpUrl": "${CONTEXT7_URL:-https://mcp.context7.com/mcp}",
+      "timeout": 60000,
       "trust": true
     },
     "sequential-thinking": {
@@ -48,6 +50,10 @@
         "--enable-fs-tools",
         "--enable-code-intel-tools"
       ],
+      "env": {
+        "npm_config_registry": "https://registry.npmmirror.com"
+      },
+      "timeout": 90000,
       "trust": true
     },
     "chrome-dev-tools": {
@@ -56,7 +62,11 @@
         "-y",
         "chrome-devtools-mcp@latest",
         "--isolated"
-      ]
+      ],
+      "env": {
+        "npm_config_registry": "https://registry.npmmirror.com"
+      },
+      "timeout": 90000
     }
   },
   "general": {
@@ -64,14 +74,14 @@
     "sessionRetention": {
       "warningAcknowledged": true,
       "enabled": true,
-      "maxAge": "120d"
+      "maxAge": "30d"
     },
     "defaultApprovalMode": "plan"
   },
   "ui": {
-    "inlineThinkingMode": "full",
+    "inlineThinkingMode": "off",
     "showStatusInTitle": true,
     "theme": "Default Light",
-    "hideContextSummary": true
+    "hideContextSummary": false
   }
 }

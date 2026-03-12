@@ -34,10 +34,12 @@
 ## ✅ 架构与流程
 
 ### 1. Type-First (类型先行)
-编写业务逻辑前，必须先定义数据结构：
-- **Go**: struct / interface
-- **TypeScript**: interface / type
-- **Java**: DTO / VO / Entity
+无论是编写新业务还是**修改现有逻辑**，必须遵循 **“修改数据结构 -> 修改逻辑 -> 修改调用/模板”** 的单向防呆流程：
+- **定义先行**：编写前必须先定义（或更新）数据结构：
+  - **Go**: struct / interface
+  - **TypeScript**: interface / type
+  - **Java**: DTO / VO / Entity
+- **严禁越级调用**：禁止在未更新类型定义的情况下，凭直觉在前端模板或业务逻辑中调用不存在的字段（如 `user.nickname`），防范“幻觉属性”导致的编译失败。
 
 ### 2. 复杂任务分步确认
 当任务涉及超过 3 个文件或修改核心逻辑时：

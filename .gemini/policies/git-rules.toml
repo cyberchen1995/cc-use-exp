@@ -6,13 +6,6 @@ decision = "allow"
 priority = 200
 description = "全局允许 run_shell_command 执行 git diff 系列命令"
 
-[[rule]]
-toolName = "shell"
-commandPrefix = "git diff"
-decision = "allow"
-priority = 200
-description = "全局允许 shell 插件执行 git diff 系列命令"
-
 # 针对其他 Git 只读命令的放行
 [[rule]]
 toolName = "run_shell_command"
@@ -32,20 +25,13 @@ commandPrefix = "git branch"
 decision = "allow"
 priority = 200
 
-# 针对自定义命令 /commit-msg 中 !{} 模板注入的放行
-[[rule]]
-toolName = "commit-msg"
-commandPrefix = "git diff"
-decision = "allow"
-priority = 210
-description = "明确允许 /commit-msg 执行 git diff"
-
+# 如果 commit_msg 是一个独立的注册工具，它不能使用 commandPrefix 进行前缀匹配。
+# 直接放行该工具即可（去掉了非法的 commandPrefix 和连字符版本）：
 [[rule]]
 toolName = "commit_msg"
-commandPrefix = "git diff"
 decision = "allow"
 priority = 210
-description = "明确允许 /commit_msg 执行 git diff (兼容下划线)"
+description = "明确允许 commit_msg 工具运行"
 
 [[commands]]
 name = "git"

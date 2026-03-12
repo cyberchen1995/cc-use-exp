@@ -118,40 +118,6 @@ tools\sync-config.bat
 | 全部覆盖 | `a` | 后续所有文件都覆盖 |
 | 全部跳过 | `s` | 后续所有文件都跳过 |
 
-### 手动部署
-
-<details>
-<summary><strong>Claude Code</strong></summary>
-
-```bash
-# 只覆盖配置目录，保留历史记录
-rm -rf ~/.claude/rules ~/.claude/skills ~/.claude/commands ~/.claude/templates ~/.claude/tasks
-cp -r .claude/rules ~/.claude/
-cp -r .claude/skills ~/.claude/
-cp -r .claude/commands ~/.claude/
-cp -r .claude/templates ~/.claude/
-cp -r .claude/tasks ~/.claude/
-cp .claude/CLAUDE.md ~/.claude/
-```
-</details>
-
-<details>
-<summary><strong>Gemini CLI</strong></summary>
-
-```bash
-# 只覆盖配置，保留认证信息
-rm -rf ~/.gemini/commands ~/.gemini/skills ~/.gemini/rules
-cp -r .gemini/commands ~/.gemini/
-cp -r .gemini/skills ~/.gemini/
-cp -r .gemini/rules ~/.gemini/
-cp -r .gemini/policies ~/.gemini/
-cp .gemini/GEMINI.md ~/.gemini/
-cp .gemini/settings.json ~/.gemini/
-```
-</details>
-
-> **注意**：Claude Code 的 `~/.claude/` 包含历史记录（`history.jsonl`、`projects/` 等），不能整体删除，只覆盖配置目录。Gemini CLI 的 `~/.gemini/` 包含认证信息（`oauth_creds.json`、`google_accounts.json`），同样只覆盖配置。
-
 ---
 
 # Part 1: Claude Code 配置
@@ -538,48 +504,16 @@ claude
 
 ## 8. 部署方法
 
-### 工作原理
+本项目采用**脚本自动化部署**。无论是首次配置还是后续更新，只需在项目根目录执行：
 
-```
-本项目 .claude/  ──开发/优化──>  确认无误  ──覆盖配置目录──>  ~/.claude/
-```
+- **macOS/Linux**: `./tools/sync-config.sh`
+- **Windows**: `tools\sync-config.bat`
 
-- 在本项目 `.claude/` 目录下开发和优化配置
-- 确认无误后，**只覆盖配置目录**到 `~/.claude/`
-- `~/.claude/` 中的历史记录（`history.jsonl`、`projects/` 等）会保留
-
-### 配置目录 vs 运行时数据
-
-| 类型 | 目录/文件 | 部署时 |
-|------|----------|--------|
-| 配置 | `rules/`, `skills/`, `commands/`, `templates/`, `tasks/`, `CLAUDE.md` | 覆盖 |
-| 运行时 | `history.jsonl`, `projects/`, `todos/`, `settings.local.json` 等 | 保留 |
-
-### 部署命令
-
-```bash
-# 只覆盖配置目录，保留历史记录
-rm -rf ~/.claude/rules ~/.claude/skills ~/.claude/commands ~/.claude/templates ~/.claude/tasks
-cp -r .claude/rules ~/.claude/
-cp -r .claude/skills ~/.claude/
-cp -r .claude/commands ~/.claude/
-cp -r .claude/templates ~/.claude/
-cp -r .claude/tasks ~/.claude/
-cp .claude/CLAUDE.md ~/.claude/
-
-# 验证部署
-# 启动 Claude Code，执行 /status 确认配置加载正确
-```
-
-> **注意**：不要整体删除 `~/.claude/`，否则会丢失对话历史记录（`claude -c` 依赖）。
+脚本会自动将配置同步到你的 `~/.claude/` 目录，并智能保留你的历史对话记录和个人配置。
 
 ---
 
-## 9. 版本记录
-
----
-
-## 10. 参考资料
+## 9. 参考资料
 - [Claude Code 官方文档](https://docs.anthropic.com/claude-code)
 
 ---
@@ -614,16 +548,21 @@ GEMINI.md 自动加载，提供以下保护：
 
 **你需要做什么：正常写代码**
 
-修改前端组件或调整页面布局时，Gemini 会自动激活对应技能：
+修改对应语言的文件或调整页面布局时，Gemini 会自动激活对应技能（共享 Claude Code 技能库）：
 
 | 技能 | 触发条件 | 提供的帮助 |
 |------|---------|-----------|
 | `frontend-safety` | 修改 Vue/React 组件、调整布局、创建覆盖层 | 数据绑定保护、布局一致性、覆盖层定位规范 |
+| `go-dev` | 操作 `.go` 文件 | 命名约定、错误处理、并发编程、测试规范 |
+| `java-dev` | 操作 `.java` 文件 | 命名约定、异常处理、Spring 规范、Java 最佳实践 |
+| `python-dev` | 操作 `.py` 文件 | 类型注解、Pydantic、pytest、uv 工具链 |
+| `bash-style` | 操作 `.sh/Dockerfile/Makefile/.md` 等 | 注释规范、tee 写入、heredoc、脚本规范 |
+| `ops-safety` | 执行系统命令、服务器运维 | 风险说明、回滚方案、问题排查原则 |
 
 **效果示例**：
 - 修改 Vue 组件时，自动保护数据绑定和事件不被意外修改
 - 调整布局时，确保间距使用 4px 倍数、与其他页面一致
-- 创建覆盖层时，统一定位策略和 z-index 管理
+- 开发 Go 或 Java 代码时，Gemini CLI 同样能提供专业的编码规范支持
 
 ### 1.3 中费力（显式调用）- Commands
 
@@ -639,7 +578,6 @@ GEMINI.md 自动加载，提供以下保护：
 | `/review quick` | 快速审查 | `/review quick` |
 | `/commit-msg` | 生成 git commit message | `/commit-msg` 或 `/commit-msg all` |
 | `/fix debug` | 复杂问题排查 | `/fix debug 表格数据不显示` |
-| `/check-toolsearch` | 检查 ToolSearch 是否可用 | `/check-toolsearch` |
 
 ### 1.4 Claude Code 推荐插件（声明式安装）
 
@@ -672,8 +610,8 @@ claude plugin install frontend-design@claude-plugins-official
 
 | 扩展 | 用途 | 安装地址 |
 |------|------|---------|
-| `context7` | 精准文档查询 | [GitHub](https://github.com/upstash/context7) |
-| `chrome-devtools` | 前端真机调试 | [GitHub](https://github.com/ChromeDevTools/chrome-devtools-mcp) |
+| `context7` | 提供精准的第三方库文档查询和代码示例（Context7 增强） | [GitHub](https://github.com/upstash/context7) |
+| `chrome-devtools-mcp` | 用于前端页面真机调试、Lighthouse 审计与性能监控 | [GitHub](https://github.com/ChromeDevTools/chrome-devtools-mcp) |
 
 **推荐安装方式：**
 运行 `./tools/sync-config.sh`，脚本会自动检测缺失的扩展并引导你一键安装。
@@ -826,24 +764,34 @@ A: 分步骤处理：
 
 ```
 .gemini/
+├── .env.example        # 网络代理配置模板（需重命名为 .env）
 ├── GEMINI.md           # 核心规则（通过 @import 引入 rules）
 ├── settings.json       # 用户设置
 ├── policies/           # 安全策略（允许 git 等命令执行）
-│   └── git-rules.toml
+│   ├── git-rules.toml
+│   └── help-rules.toml
 ├── rules/              # 规则：通过 @import 始终加载
+│   ├── defensive.md        # 防御性编码规范
+│   ├── doc-sync.md         # 文档同步规范
+│   ├── ops-safety.md       # 运维安全规范
 │   ├── file-size-limit.md  # 文件行数限制
-│   └── frontend-style.md   # 前端规范补充（Pinia/API/TS/性能）
+│   └── frontend-style.md   # 前端规范补充
 ├── skills/             # 技能：按需激活（v0.24.0+）
-│   └── frontend-safety/
-│       └── SKILL.md    # 前端修改安全约束、布局一致性、覆盖层规范
+│   ├── bash-style/
+│   ├── frontend-safety/
+│   ├── go-dev/
+│   ├── java-dev/
+│   ├── ops-safety/
+│   └── python-dev/
 └── commands/           # 自定义命令（.toml 格式）
-    ├── layout.toml     # 布局重构
-    ├── fix.toml        # 快速修复
-    ├── code-review.toml
-    ├── quick-review.toml
-    ├── commit-msg.toml # 生成 commit message
-    ├── check-toolsearch.toml # ToolSearch 可用性检查
-    └── debug.toml
+    ├── layout.toml         # 布局重构
+    ├── layout-check.toml   # 布局一致性检查
+    ├── vue-split.toml      # Vue 文件拆分
+    ├── fix.toml            # 快速修复
+    ├── debug.toml          # 系统化调试
+    ├── code-review.toml    # 正式审查
+    ├── quick-review.toml   # 快速审查
+    └── commit-msg.toml     # 生成 commit message
 ```
 
 ---
@@ -925,45 +873,36 @@ gemini
 
 > **注意**：API Key 是敏感信息，请勿提交到代码仓库或分享给他人。
 
+### 7.3 网络与代理配置（国内用户必看）
+
+如果在使用过程中遇到 `gemini-3.1-pro-preview` 等大模型连接超时，或 npx 安装/执行 MCP 扩展极度卡顿，这通常是网络原因导致。
+
+本项目提供了一份防污染的代理配置模板 `.gemini/.env.example`。
+
+**使用方法**：
+1. 复制模板并重命名为 `.env`：
+   ```bash
+   cp .gemini/.env.example .gemini/.env
+   ```
+2. 修改 `.env` 文件，填入你本地科学上网客户端（如 Clash Verge）的代理端口：
+   ```env
+   HTTP_PROXY=http://127.0.0.1:你的端口
+   HTTPS_PROXY=http://127.0.0.1:你的端口
+   # 默认已配置 NO_PROXY 排除 localhost 和 .npmmirror.com 以实现直连加速
+   NO_PROXY=localhost,127.0.0.1,.npmmirror.com
+   ```
+*(注：`.gemini/.env` 已被加入 `.gitignore`，不会泄露你的个人网络环境)*
+
 ---
 
 ## 8. 部署方法
 
-### 首次部署
+本项目采用**脚本自动化部署**。无论是首次配置还是后续更新，只需在项目根目录执行：
 
-```bash
-# 1. 如果 ~/.gemini 不存在，先创建
-[ ! -d ~/.gemini ] && mkdir -p ~/.gemini
+- **macOS/Linux**: `./tools/sync-config.sh`
+- **Windows**: `tools\sync-config.bat`
 
-# 2. 覆盖配置，保留认证信息
-rm -rf ~/.gemini/commands ~/.gemini/skills ~/.gemini/rules
-cp -r .gemini/commands ~/.gemini/
-cp -r .gemini/skills ~/.gemini/
-cp -r .gemini/rules ~/.gemini/
-cp -r .gemini/policies ~/.gemini/
-cp .gemini/GEMINI.md ~/.gemini/
-cp .gemini/settings.json ~/.gemini/
-
-# 3. 验证
-gemini
-# 输入 /skills list 查看技能是否加载
-# 输入 /layout 测试命令是否可用
-```
-
-### 更新部署
-
-```bash
-# 只覆盖配置，保留认证
-rm -rf ~/.gemini/commands ~/.gemini/skills ~/.gemini/rules
-cp -r .gemini/commands ~/.gemini/
-cp -r .gemini/skills ~/.gemini/
-cp -r .gemini/rules ~/.gemini/
-cp -r .gemini/policies ~/.gemini/
-cp .gemini/GEMINI.md ~/.gemini/
-cp .gemini/settings.json ~/.gemini/
-```
-
-> **注意**：只覆盖配置文件（`commands/`、`skills/`、`rules/`、`GEMINI.md`、`settings.json`），保留认证信息（`oauth_creds.json`、`google_accounts.json`）和运行时数据（`installation_id`、`state.json`）。
+脚本会自动将配置同步到你的 `~/.gemini/` 目录，并智能保留你的认证信息（`oauth_creds.json` 等）和运行时数据。
 
 ---
 
