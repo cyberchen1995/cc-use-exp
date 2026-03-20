@@ -1,0 +1,5 @@
+interface:
+  display_name: "CC Bash Style"
+  short_description: "Shell、Dockerfile、Makefile 与命令片段写法规范。"
+policy:
+  allow_implicit_invocation: true

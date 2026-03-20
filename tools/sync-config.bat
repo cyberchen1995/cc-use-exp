@@ -1,9 +1,13 @@
 @echo off
 setlocal enabledelayedexpansion
 
-REM 同步 .claude 和 .gemini 配置到用户根目录
+REM 同步 .claude、.gemini 和 .codex 配置到用户根目录
 
 set "HOME_DIR=%USERPROFILE%"
+set "CODEX_MANAGED_START=<!-- cc-use-exp codex managed:start -->"
+set "CODEX_MANAGED_END=<!-- cc-use-exp codex managed:end -->"
+set "CODEX_PROFILE_START=# cc-use-exp codex profiles:start"
+set "CODEX_PROFILE_END=# cc-use-exp codex profiles:end"
 
 REM 获取项目根目录（tools 上一级）
 set "SCRIPT_DIR=%~dp0.."
@@ -174,6 +178,86 @@ if exist "%SCRIPT_DIR%\.gemini" (
     )
 ) else (
     echo [Gemini CLI] 源目录不存在，跳过
+)
+
+echo.
+REM --- Codex ---
+if exist "%SCRIPT_DIR%\.codex" (
+    echo [Codex] 开始同步
+
+    if not exist "%HOME_DIR%\.codex" mkdir "%HOME_DIR%\.codex"
+    if not exist "%HOME_DIR%\.codex\rules" mkdir "%HOME_DIR%\.codex\rules"
+    if not exist "%HOME_DIR%\.agents" mkdir "%HOME_DIR%\.agents"
+    if not exist "%HOME_DIR%\.agents\skills" mkdir "%HOME_DIR%\.agents\skills"
+
+    set "CODEX_RULES_SYNCED=0"
+    set "CODEX_SKILLS_SYNCED=0"
+    set "CODEX_AGENTS_SRC=%SCRIPT_DIR%\.codex\global\AGENTS.md"
+    set "CODEX_AGENTS_DST=%HOME_DIR%\.codex\AGENTS.md"
+    set "CODEX_RULES_SRC=%SCRIPT_DIR%\.codex\global\rules"
+    set "CODEX_SKILLS_SRC=%SCRIPT_DIR%\.codex\skills"
+    set "CODEX_PROFILES_SRC=%SCRIPT_DIR%\.codex\profiles"
+    set "CODEX_CONFIG_DST=%HOME_DIR%\.codex\config.toml"
+    set "RULES_MANIFEST=%HOME_DIR%\.codex\rules\.cc-use-exp-managed"
+    set "SKILLS_MANIFEST=%HOME_DIR%\.agents\skills\.cc-use-exp-managed"
+
+    if exist "!CODEX_AGENTS_SRC!" (
+        powershell -NoProfile -Command "$start=$env:CODEX_MANAGED_START; $end=$env:CODEX_MANAGED_END; $srcPath=$env:CODEX_AGENTS_SRC; $dstPath=$env:CODEX_AGENTS_DST; $src=[IO.File]::ReadAllText($srcPath); $existing=if(Test-Path $dstPath){[IO.File]::ReadAllText($dstPath)} else {''}; $pattern='(?s)\r?\n?'+[regex]::Escape($start)+'.*?'+[regex]::Escape($end)+'\r?\n?'; $clean=[regex]::Replace($existing,$pattern,''); $clean=$clean.TrimEnd(); if($clean.Length -gt 0){$clean += [Environment]::NewLine + [Environment]::NewLine}; $content=$clean + $start + [Environment]::NewLine + $src.TrimEnd() + [Environment]::NewLine + $end + [Environment]::NewLine; [IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($dstPath)) ^| Out-Null; [IO.File]::WriteAllText($dstPath,$content,[Text.UTF8Encoding]::new($false))" >nul
+        if errorlevel 1 (
+            echo   警告: AGENTS 同步失败，请检查 powershell 是否可用
+        ) else (
+            echo   [√] 已合并 ~/.codex/AGENTS.md 受管区块
+        )
+    ) else (
+        echo   未找到 global\AGENTS.md，跳过 AGENTS 同步
+    )
+
+    if exist "!RULES_MANIFEST!" (
+        for /f "usebackq delims=" %%f in ("!RULES_MANIFEST!") do (
+            if exist "%HOME_DIR%\.codex\rules\%%f" del /f /q "%HOME_DIR%\.codex\rules\%%f"
+        )
+        del /f /q "!RULES_MANIFEST!" >nul 2>nul
+    )
+    if exist "!CODEX_RULES_SRC!" (
+        for /f "delims=" %%f in ('dir /b /a-d "!CODEX_RULES_SRC!\*.rules" 2^>nul') do (
+            copy /y "!CODEX_RULES_SRC!\%%f" "%HOME_DIR%\.codex\rules\%%f" >nul
+            >> "!RULES_MANIFEST!" echo %%f
+            set /a CODEX_RULES_SYNCED+=1
+        )
+    )
+
+    if exist "!SKILLS_MANIFEST!" (
+        for /f "usebackq delims=" %%d in ("!SKILLS_MANIFEST!") do (
+            if exist "%HOME_DIR%\.agents\skills\%%d" rmdir /s /q "%HOME_DIR%\.agents\skills\%%d"
+        )
+        del /f /q "!SKILLS_MANIFEST!" >nul 2>nul
+    )
+    if exist "!CODEX_SKILLS_SRC!" (
+        for /f "delims=" %%d in ('dir /b /ad "!CODEX_SKILLS_SRC!" 2^>nul') do (
+            xcopy /y /e /i /q "!CODEX_SKILLS_SRC!\%%d" "%HOME_DIR%\.agents\skills\%%d" >nul
+            >> "!SKILLS_MANIFEST!" echo %%d
+            set /a CODEX_SKILLS_SYNCED+=1
+        )
+    )
+
+    set "CODEX_PROFILES_SYNCED=0"
+    if exist "!CODEX_PROFILES_SRC!" (
+        for /f %%n in ('dir /b /a-d "!CODEX_PROFILES_SRC!\*.toml" 2^>nul ^| find /c /v ""') do set "CODEX_PROFILES_SYNCED=%%n"
+        powershell -NoProfile -Command "$start=$env:CODEX_PROFILE_START; $end=$env:CODEX_PROFILE_END; $srcDir=$env:CODEX_PROFILES_SRC; $dstPath=$env:CODEX_CONFIG_DST; $existing=if(Test-Path $dstPath){[IO.File]::ReadAllText($dstPath)} else {''}; $pattern='(?s)\r?\n?'+[regex]::Escape($start)+'.*?'+[regex]::Escape($end)+'\r?\n?'; $clean=[regex]::Replace($existing,$pattern,''); $parts=Get-ChildItem -Path $srcDir -Filter '*.toml' | Sort-Object Name | ForEach-Object { [IO.File]::ReadAllText($_.FullName).TrimEnd() }; $body='# Managed Codex profiles from cc-use-exp'+[Environment]::NewLine+'# Use with: codex -p cc-fast-api | cc-balanced | cc-deep'+[Environment]::NewLine+[Environment]::NewLine+($parts -join ([Environment]::NewLine+[Environment]::NewLine)); $clean=$clean.TrimEnd(); if($clean.Length -gt 0){$clean += [Environment]::NewLine + [Environment]::NewLine}; $content=$clean + $start + [Environment]::NewLine + $body.TrimEnd() + [Environment]::NewLine + $end + [Environment]::NewLine; [IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($dstPath)) ^| Out-Null; [IO.File]::WriteAllText($dstPath,$content,[Text.UTF8Encoding]::new($false))" >nul
+        if errorlevel 1 (
+            echo   警告: profiles 同步失败，请检查 powershell 是否可用
+        ) else (
+            echo   [√] profiles: !CODEX_PROFILES_SYNCED! 个，已合并到 ~/.codex/config.toml
+        )
+    ) else (
+        echo   未找到 profiles\，跳过 profile 同步
+    )
+
+    echo   [√] rules: !CODEX_RULES_SYNCED! 个，同步到 ~/.codex/rules/
+    echo   [√] skills: !CODEX_SKILLS_SYNCED! 个，同步到 ~/.agents/skills/
+    echo   已保留 ~/.codex 运行态文件（auth/history/logs/cache）
+) else (
+    echo [Codex] 源目录不存在，跳过
 )
 
 echo.

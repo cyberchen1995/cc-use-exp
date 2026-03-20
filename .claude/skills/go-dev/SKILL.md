@@ -132,6 +132,7 @@ func TestAdd(t *testing.T) {
 | 未预分配 slice | `make([]T, 0, cap)` |
 | N+1 查询 | 批量查询 + 预加载 |
 | 无限制并发 | 使用 semaphore 或 worker pool |
+| Raw SQL 别名用了保留字 | 避免 `year_month`/`order`/`status`/`rank` 等 MySQL 保留字做别名 |
 
 ```bash
 # 性能分析

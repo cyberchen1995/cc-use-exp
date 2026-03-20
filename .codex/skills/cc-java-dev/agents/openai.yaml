@@ -1,0 +1,5 @@
+interface:
+  display_name: "CC Java Dev"
+  short_description: "Java/Spring 分层、异常、集合、并发与测试规范。"
+policy:
+  allow_implicit_invocation: true

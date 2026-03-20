@@ -1,0 +1,6 @@
+# API key 环境下的“快模式” profile。
+# 不依赖官方 Fast mode credits，而是用更快的 Codex 模型。
+[profiles."cc-fast-api"]
+model = "codex-mini-latest"
+review_model = "codex-mini-latest"
+

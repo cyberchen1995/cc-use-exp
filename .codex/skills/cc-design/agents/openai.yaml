@@ -1,0 +1,6 @@
+interface:
+  display_name: "design"
+  short_description: "显式技术设计文档与设计检查清单工作流。"
+  default_prompt: "Use $design to clarify goal, scope, constraints, and tradeoffs before producing the right design doc or checklist."
+policy:
+  allow_implicit_invocation: false

@@ -1,0 +1,71 @@
+# Prompt before mutating repository state or package state.
+
+prefix_rule(
+    pattern = ["git", ["add", "commit", "push", "tag"]],
+    decision = "prompt",
+    justification = "Git write operations should stay user-confirmed.",
+    match = [
+        "git add .",
+        "git commit -m fix",
+        "git push origin main",
+        "git tag v1.0.0",
+    ],
+)
+
+prefix_rule(
+    pattern = [["npm", "pnpm", "yarn"], ["install", "add", "remove", "update"]],
+    decision = "prompt",
+    justification = "Dependency changes can alter the workspace and lockfiles.",
+    match = [
+        "npm install",
+        "pnpm add zod",
+        "yarn remove lodash",
+    ],
+)
+
+prefix_rule(
+    pattern = [["systemctl", "service", "launchctl", "docker", "kubectl", "mysql", "psql", "sqlite3"]],
+    decision = "prompt",
+    justification = "Service, container, or database operations can have a broad blast radius.",
+    match = [
+        "systemctl restart nginx",
+        "docker compose down",
+        "kubectl delete pod foo",
+        "sqlite3 app.db",
+    ],
+)
+
+prefix_rule(
+    pattern = ["rm"],
+    decision = "forbidden",
+    justification = "Use safer, reviewed file edits instead of direct deletion commands.",
+    match = ["rm -rf tmp"],
+)
+
+prefix_rule(
+    pattern = ["sudo", "rm"],
+    decision = "forbidden",
+    justification = "Do not run privileged delete commands automatically.",
+    match = ["sudo rm -rf /tmp/foo"],
+)
+
+prefix_rule(
+    pattern = ["git", "reset", "--hard"],
+    decision = "forbidden",
+    justification = "Hard reset is destructive. Use a safer alternative after explicit review.",
+    match = ["git reset --hard HEAD~1"],
+)
+
+prefix_rule(
+    pattern = ["git", "clean", "-fd"],
+    decision = "forbidden",
+    justification = "Force-clean removes untracked files destructively.",
+    match = ["git clean -fd"],
+)
+
+prefix_rule(
+    pattern = [["mkfs", "dd", "shutdown", "reboot"]],
+    decision = "forbidden",
+    justification = "Highly destructive system-level commands must not run automatically.",
+    match = ["reboot", "shutdown -r now"],
+)

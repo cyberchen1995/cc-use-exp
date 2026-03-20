@@ -1,0 +1,35 @@
+# Read-only, commonly useful commands can run outside the sandbox without an
+# extra prompt when the sandbox blocks them.
+
+prefix_rule(
+    pattern = ["pwd"],
+    decision = "allow",
+    justification = "Read-only working directory inspection is safe.",
+    match = ["pwd"],
+)
+
+prefix_rule(
+    pattern = ["ls"],
+    decision = "allow",
+    justification = "Directory listing is read-only.",
+    match = ["ls", "ls -la"],
+)
+
+prefix_rule(
+    pattern = ["rg"],
+    decision = "allow",
+    justification = "ripgrep is the preferred read-only search tool.",
+    match = ["rg TODO src", "rg --files ."],
+)
+
+prefix_rule(
+    pattern = ["git", ["status", "diff", "show", "log"]],
+    decision = "allow",
+    justification = "Common Git inspection commands are read-only.",
+    match = [
+        "git status --short",
+        "git diff --stat",
+        "git show HEAD~1",
+        "git log --oneline -5",
+    ],
+)

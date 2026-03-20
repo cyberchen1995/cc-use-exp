@@ -1,0 +1,5 @@
+interface:
+  display_name: "CC Ops Safety"
+  short_description: "环境敏感操作的风险说明、回滚思路与影响面控制。"
+policy:
+  allow_implicit_invocation: true

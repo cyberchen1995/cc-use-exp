@@ -1,36 +1,175 @@
-<svg width="800" height="400" xmlns="http://www.w3.org/2000/svg">
+<svg width="800" height="440" viewBox="0 0 800 440" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#1e293b;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#0f172a;stop-opacity:1" />
+    <linearGradient id="bg" x1="32" y1="20" x2="770" y2="420" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0F172A" />
+      <stop offset="0.55" stop-color="#132238" />
+      <stop offset="1" stop-color="#060B16" />
     </linearGradient>
+    <radialGradient id="glow-amber" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(132 74) rotate(36) scale(220 126)">
+      <stop offset="0" stop-color="#F59E0B" stop-opacity="0.18" />
+      <stop offset="1" stop-color="#F59E0B" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="glow-blue" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(676 62) rotate(144) scale(248 148)">
+      <stop offset="0" stop-color="#60A5FA" stop-opacity="0.18" />
+      <stop offset="1" stop-color="#60A5FA" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="hero-stroke" x1="234" y1="94" x2="566" y2="94" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F59E0B" />
+      <stop offset="0.52" stop-color="#E2E8F0" />
+      <stop offset="1" stop-color="#60A5FA" />
+    </linearGradient>
+    <linearGradient id="card-claude" x1="42" y1="186" x2="256" y2="336" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#21151A" />
+      <stop offset="1" stop-color="#151A27" />
+    </linearGradient>
+    <linearGradient id="card-gemini" x1="293" y1="186" x2="507" y2="336" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#131B32" />
+      <stop offset="1" stop-color="#101827" />
+    </linearGradient>
+    <linearGradient id="card-codex" x1="544" y1="186" x2="758" y2="336" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#101B2E" />
+      <stop offset="1" stop-color="#0A1322" />
+    </linearGradient>
+    <filter id="shadow" x="-24" y="-24" width="848" height="488" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="20" stdDeviation="18" flood-color="#020617" flood-opacity="0.42" />
+    </filter>
     <style>
-      .title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 48px; font-weight: bold; fill: #f8fafc; text-anchor: middle; }
-      .subtitle { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 24px; fill: #94a3b8; text-anchor: middle; }
-      .label { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 20px; font-weight: 500; text-anchor: middle; }
+      .eyebrow {
+        font-family: "Trebuchet MS", "Avenir Next", Verdana, sans-serif;
+        font-size: 12px;
+        letter-spacing: 1.6px;
+        text-transform: uppercase;
+        fill: #94A3B8;
+        text-anchor: middle;
+      }
+      .headline {
+        font-family: "Trebuchet MS", "Avenir Next", Verdana, sans-serif;
+        font-size: 40px;
+        font-weight: 700;
+        fill: #F8FAFC;
+        text-anchor: middle;
+      }
+      .headline-code {
+        font-family: "Courier New", "SFMono-Regular", monospace;
+        font-size: 40px;
+        font-weight: 700;
+        fill: #FDE68A;
+      }
+      .subhead {
+        font-family: "Trebuchet MS", "Avenir Next", Verdana, sans-serif;
+        font-size: 17px;
+        fill: #CBD5E1;
+        text-anchor: middle;
+      }
+      .tool-line {
+        font-family: "Trebuchet MS", "Avenir Next", Verdana, sans-serif;
+        font-size: 14px;
+        fill: #A8B4C9;
+        text-anchor: middle;
+      }
+      .card-title {
+        font-family: "Trebuchet MS", "Avenir Next", Verdana, sans-serif;
+        font-size: 24px;
+        font-weight: 700;
+        fill: #F8FAFC;
+      }
+      .card-kicker {
+        font-family: "Trebuchet MS", "Avenir Next", Verdana, sans-serif;
+        font-size: 11px;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+      }
+      .card-copy {
+        font-family: "Trebuchet MS", "Avenir Next", Verdana, sans-serif;
+        font-size: 12px;
+        fill: #A8B4C9;
+      }
+      .chip {
+        font-family: "Courier New", "SFMono-Regular", monospace;
+        font-size: 12px;
+        font-weight: 700;
+        text-anchor: middle;
+      }
+      .footer-label {
+        font-family: "Trebuchet MS", "Avenir Next", Verdana, sans-serif;
+        font-size: 11px;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+        fill: #64748B;
+        text-anchor: middle;
+      }
+      .footer-copy {
+        font-family: "Trebuchet MS", "Avenir Next", Verdana, sans-serif;
+        font-size: 13px;
+        fill: #CBD5E1;
+        text-anchor: middle;
+      }
+      .footer-code {
+        font-family: "Courier New", "SFMono-Regular", monospace;
+        font-size: 11.5px;
+        fill: #CBD5E1;
+        text-anchor: middle;
+      }
     </style>
   </defs>
-  
-  <!-- Background -->
-  <rect width="800" height="400" fill="url(#bg)" rx="12" />
-  
-  <!-- Abstract Design Elements -->
-  <!-- Left: Claude Theme (Warm/Orange) -->
-  <circle cx="280" cy="160" r="70" fill="#334155" opacity="0.3" />
-  <circle cx="280" cy="160" r="50" fill="#da7756" />
-  <text x="280" y="260" class="label" fill="#da7756">Claude Code</text>
 
-  <!-- Center: Plus -->
-  <text x="400" y="175" class="title" style="font-size: 40px; fill: #475569;">&amp;</text>
+  <g filter="url(#shadow)">
+    <rect x="16" y="16" width="768" height="408" rx="28" fill="url(#bg)" />
+    <rect x="16.5" y="16.5" width="767" height="407" rx="27.5" stroke="#1E293B" />
+  </g>
 
-  <!-- Right: Gemini Theme (Cool/Blue-Purple) -->
-  <circle cx="520" cy="160" r="70" fill="#334155" opacity="0.3" />
-  <circle cx="520" cy="160" r="50" fill="#4b8bf5" />
-  <text x="520" y="260" class="label" fill="#4b8bf5">Gemini CLI</text>
+  <rect x="16" y="16" width="768" height="408" rx="28" fill="url(#glow-amber)" />
+  <rect x="16" y="16" width="768" height="408" rx="28" fill="url(#glow-blue)" />
 
-  <!-- Main Title -->
-  <text x="400" y="320" class="title">AI 编码助手配置中心</text>
-  
-  <!-- Subtitle -->
-  <text x="400" y="360" class="subtitle">开箱即用的配置模板与最佳实践</text>
+  <circle cx="112" cy="74" r="72" fill="#F59E0B" opacity="0.05" />
+  <circle cx="690" cy="64" r="84" fill="#60A5FA" opacity="0.05" />
+
+  <text x="400" y="50" class="eyebrow">ONE REPO · THREE TOOLS · TERMINAL-FIRST</text>
+  <text x="400" y="98" class="headline">保留你熟悉的 <tspan class="headline-code">CLI</tspan></text>
+  <line x1="234" y1="116" x2="566" y2="116" stroke="url(#hero-stroke)" stroke-width="2" stroke-linecap="round" />
+  <text x="400" y="145" class="subhead">让 Claude Code、Gemini CLI 和 Codex 开箱即用</text>
+  <text x="400" y="168" class="tool-line">同一套仓库，分别同步到各自用户级配置入口</text>
+
+  <g>
+    <rect x="42" y="186" width="214" height="150" rx="22" fill="url(#card-claude)" stroke="#3A2A22" />
+    <text x="66" y="214" class="card-kicker" fill="#FDBA74">Slash Commands</text>
+    <text x="66" y="244" class="card-title">Claude Code</text>
+    <text x="66" y="268" class="card-copy">
+      <tspan x="66" dy="0">保留显式命令入口，继续使用</tspan>
+      <tspan x="66" dy="18">Markdown workflow</tspan>
+    </text>
+    <rect x="66" y="290" width="124" height="28" rx="14" fill="#291E1C" stroke="#6B4D32" />
+    <text x="128" y="308" class="chip" fill="#FDBA74">/commit-msg</text>
+  </g>
+
+  <g>
+    <rect x="293" y="186" width="214" height="150" rx="22" fill="url(#card-gemini)" stroke="#243254" />
+    <text x="317" y="214" class="card-kicker" fill="#BFDBFE">Config-Driven CLI</text>
+    <text x="317" y="244" class="card-title">Gemini CLI</text>
+    <text x="317" y="268" class="card-copy">
+      <tspan x="317" dy="0">保留 TOML、@import 和 skills</tspan>
+      <tspan x="317" dy="18">这套配置驱动方式</tspan>
+    </text>
+    <rect x="317" y="290" width="102" height="28" rx="14" fill="#151F3D" stroke="#355086" />
+    <text x="368" y="308" class="chip" fill="#BFDBFE">@import</text>
+  </g>
+
+  <g>
+    <rect x="544" y="186" width="214" height="150" rx="22" fill="url(#card-codex)" stroke="#31465E" />
+    <text x="568" y="214" class="card-kicker" fill="#E2E8F0">Workflow Skills</text>
+    <text x="568" y="244" class="card-title">Codex</text>
+    <text x="568" y="268" class="card-copy">
+      <tspan x="568" dy="0">保留 CLI，同时升级为</tspan>
+      <tspan x="568" dy="18">$skill-name workflow</tspan>
+    </text>
+    <rect x="568" y="290" width="124" height="28" rx="14" fill="#101B2F" stroke="#506C8E" />
+    <text x="630" y="308" class="chip" fill="#E2E8F0">$commit-msg</text>
+  </g>
+
+  <g>
+    <rect x="58" y="362" width="684" height="42" rx="18" fill="#0A1120" fill-opacity="0.9" stroke="#233042" />
+    <text x="400" y="381" class="footer-label">SOURCE OF TRUTH</text>
+    <text x="400" y="396" class="footer-copy">项目内维护权威源，用户目录接收部署产物</text>
+    <text x="400" y="414" class="footer-code">.claude   .gemini   .codex   ->   ~/.claude   ~/.gemini   ~/.codex + ~/.agents/skills</text>
+  </g>
 </svg>

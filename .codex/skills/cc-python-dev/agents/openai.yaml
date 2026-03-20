@@ -1,0 +1,5 @@
+interface:
+  display_name: "CC Python Dev"
+  short_description: "Python 类型、数据模型、pytest 与 uv 工具链规范。"
+policy:
+  allow_implicit_invocation: true

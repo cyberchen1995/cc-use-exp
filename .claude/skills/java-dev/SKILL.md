@@ -388,6 +388,40 @@ public Result list(@RequestParam @Min(1) int page,
 
 ---
 
+## Native SQL 规范
+
+### 别名避免 MySQL 保留字
+
+`@Query(nativeQuery = true)` 中的列别名如果是 MySQL 保留字，会导致语法错误。
+
+**高频踩坑保留字**：`year_month`, `order`, `status`, `key`, `value`, `name`, `type`, `date`, `time`, `rank`, `range`, `rows`, `column`, `user`, `role`, `group`
+
+| 规则 | 说明 |
+|------|------|
+| ✅ 使用短别名或缩写 | `ym`, `ord_status`, `cnt` |
+| ✅ 或用反引号转义 | `` `year_month` `` |
+| ❌ 禁止直接用保留字做别名 | `as year_month`、`as order`、`as rank` |
+
+```java
+// ❌ year_month 是 MySQL 保留字（INTERVAL YEAR_MONTH）
+@Query(value = """
+    SELECT DATE_FORMAT(o.order_date, '%Y-%m') as year_month,
+           COUNT(*) as cnt
+    FROM orders o
+    GROUP BY year_month
+    """, nativeQuery = true)
+
+// ✅ 改用非保留字别名
+@Query(value = """
+    SELECT DATE_FORMAT(o.order_date, '%Y-%m') as ym,
+           COUNT(*) as cnt
+    FROM orders o
+    GROUP BY ym
+    """, nativeQuery = true)
+```
+
+---
+
 ## 日志规范
 
 ```java

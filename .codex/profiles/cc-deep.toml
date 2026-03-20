@@ -1,0 +1,6 @@
+# 深度分析 profile：复杂审查、重设计、长链路排障使用。
+[profiles."cc-deep"]
+model = "gpt-5.4"
+review_model = "gpt-5.4"
+model_reasoning_effort = "xhigh"
+

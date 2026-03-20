@@ -1,0 +1,6 @@
+interface:
+  display_name: "project-init"
+  short_description: "显式初始化项目说明与基础脚手架文件。"
+  default_prompt: "Use $project-init to inspect this repository, generate a project-level AGENTS.md, and add only the confirmed starter files this stack actually needs."
+policy:
+  allow_implicit_invocation: false

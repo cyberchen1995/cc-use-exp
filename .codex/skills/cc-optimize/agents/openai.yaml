@@ -1,0 +1,6 @@
+interface:
+  display_name: "optimize"
+  short_description: "显式优化扫描，支持 full、ux、perf、code 四种模式。"
+  default_prompt: "Use $optimize to scope the scan first and then produce an evidence-based report ordered by impact instead of jumping into edits."
+policy:
+  allow_implicit_invocation: false

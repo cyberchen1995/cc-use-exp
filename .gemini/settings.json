@@ -83,5 +83,8 @@
     "showStatusInTitle": true,
     "theme": "Default Light",
     "hideContextSummary": false
+  },
+  "ide": {
+    "hasSeenNudge": true
   }
 }

@@ -5,14 +5,15 @@
 <!-- 封面图 -->
 <img src="./cover.svg" alt="AI 编码助手配置中心" width="100%" style="max-width: 800px" />
 
-> 让 Claude Code 和 Gemini CLI 开箱即用的配置模板
+> 保留你熟悉的 CLI，让 Claude Code、Gemini CLI 和 Codex 开箱即用
 >
 > 按费力度从低到高，用最少操作获得最大帮助
 
 [![version](https://img.shields.io/badge/version-1.0.19-blue.svg)](https://github.com/doccker/cc-use-exp)
-[![license](https://img.shields.io/badge/license-Custom-green.svg)](./LICENSE)
+[![license](https://img.shields.io/badge/license-PolyForm%20NC-green.svg)](./LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Config-orange.svg)](https://docs.anthropic.com/claude-code)
 [![Gemini CLI](https://img.shields.io/badge/Gemini_CLI-Config-purple.svg)](https://github.com/google-gemini/gemini-cli)
+[![Codex](https://img.shields.io/badge/Codex-Config-black.svg)](https://developers.openai.com/codex/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/doccker/cc-use-exp/pulls)
 [![GitHub stars](https://img.shields.io/github/stars/doccker/cc-use-exp)](https://github.com/doccker/cc-use-exp/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/doccker/cc-use-exp)](https://github.com/doccker/cc-use-exp/network)
@@ -35,6 +36,8 @@
 - **Part 2: Gemini CLI**
   - [快速开始](#1-快速开始-1)
   - [前端场景速查](#2-前端场景速查)
+- **Part 3: Codex**
+- [参考资料](#参考资料)
 - [社区与支持](#社区与支持)
 - [许可声明](#许可声明)
 
@@ -47,40 +50,44 @@
 ### 使用架构
 
 ```
-本项目                      用户目录                    其他项目
-├── .claude/  ──覆盖──>    ~/.claude/  <──读取──      .claude/ (空)
-└── .gemini/  ──覆盖──>    ~/.gemini/  <──读取──      .gemini/ (空)
+本项目                      用户目录                               其他项目
+├── .claude/  ──覆盖──>    ~/.claude/  <──读取──                 .claude/ (空)
+├── .gemini/  ──覆盖──>    ~/.gemini/  <──读取──                 .gemini/ (空)
+└── .codex/   ──增量部署──> ~/.codex/ + ~/.agents/skills/ <──读取── .codex/ (空)
 ```
 
 - **本项目**：配置开发/维护环境，不参与实际业务开发
 - **用户目录**：实际生效的配置
 - **其他项目**：配置目录为空，自动使用用户目录配置
 
-### 两套配置的关系
+### 三套配置的关系
 
 | 目录 | 服务对象 | 说明 |
 |------|---------|------|
 | `.claude/` | Claude Code | Anthropic 的 CLI 工具 |
 | `.gemini/` | Gemini CLI | Google 的 CLI 工具 |
+| `.codex/` | Codex | OpenAI 的 CLI 工具，项目内维护权威源，部署时分发到 `~/.codex/` 和 `~/.agents/skills/` |
 
-**两者完全独立**：
+**三者相互独立**：
 - Claude Code 只读取 `~/.claude/`，不读取 `~/.gemini/`
 - Gemini CLI 只读取 `~/.gemini/`，不读取 `~/.claude/`
+- Codex 的全局入口是 `~/.codex/AGENTS.md`、`~/.codex/rules/` 和 `~/.agents/skills/`
 - 配置内容可能相似（如禁止行为、技术栈偏好），但这不是重复，而是各自需要的独立配置
 
 ### 配置能力差异
 
-| 特性 | Claude Code | Gemini CLI |
-|------|-------------|------------|
-| 主配置文件 | `.claude/CLAUDE.md` | `.gemini/GEMINI.md` |
-| 规则目录 | `.claude/rules/` ✅ | `.gemini/rules/` ✅（通过 @import） |
-| 技能目录 | `.claude/skills/` ✅ | `.gemini/skills/` ✅（v0.24.0+） |
-| 命令目录 | `.claude/commands/` (.md) | `.gemini/commands/` (.toml) |
-| 命令格式 | Markdown | TOML |
+| 特性 | Claude Code | Gemini CLI | Codex |
+|------|-------------|------------|-------|
+| 主配置文件 | `.claude/CLAUDE.md` | `.gemini/GEMINI.md` | `.codex/global/AGENTS.md` → `~/.codex/AGENTS.md` |
+| 规则目录 | `.claude/rules/` ✅ | `.gemini/rules/` ✅（通过 @import） | `.codex/global/rules/` → `~/.codex/rules/` |
+| 技能目录 | `.claude/skills/` ✅ | `.gemini/skills/` ✅（v0.24.0+） | `.codex/skills/` → `~/.agents/skills/` |
+| 命令目录 | `.claude/commands/` (.md) | `.gemini/commands/` (.toml) | 无独立命令目录，使用显式 workflow skills |
+| 命令格式 | Markdown | TOML | `SKILL.md` + `agents/openai.yaml` |
 
 **规则同步方式**：
 - Claude Code：规则拆分到 `rules/` 目录，按文件组织；技能放 `skills/` 按需加载
 - Gemini CLI：核心规则在 `GEMINI.md`；详细规范通过 `skills/` 按需激活（v0.24.0+）
+- Codex：全局仅保留极薄 `AGENTS.md` 和审批 `rules`；绝大多数通用规范放进 `skills`，通过渐进式披露按需加载
 
 > 如需在两个工具间同步规则（如禁止行尾注释），需分别在 `.claude/rules/bash-style.md` 和 `.gemini/GEMINI.md` 中维护。
 
@@ -92,6 +99,7 @@
 |------|---------|---------|------|
 | Claude Code | `.claude/` | `~/.claude/` | ✅ 完整支持 |
 | Gemini CLI | `.gemini/` | `~/.gemini/` | ✅ 完整支持 |
+| Codex | `.codex/` | `~/.codex/` + `~/.agents/skills/` | ✅ 完整支持（增量部署） |
 
 ---
 
@@ -109,14 +117,26 @@
 tools\sync-config.bat
 ```
 
-脚本会自动将 `.claude/` 和 `.gemini/` 同步到用户根目录（`~/.claude/` 和 `~/.gemini/`），文件冲突时提供以下选项：
+脚本会自动同步三套配置：
 
-| 选项 | 按键 | 说明 |
-|------|------|------|
-| 覆盖当前文件 | `y` | 仅覆盖这一个 |
-| 跳过当前文件 | `N` 或回车 | 默认，仅跳过这一个 |
-| 全部覆盖 | `a` | 后续所有文件都覆盖 |
-| 全部跳过 | `s` | 后续所有文件都跳过 |
+- `.claude/` → `~/.claude/`
+- `.gemini/` → `~/.gemini/`
+- `.codex/global/AGENTS.md` → `~/.codex/AGENTS.md`（受管区块合并）
+- `.codex/global/rules/` → `~/.codex/rules/`
+- `.codex/skills/` → `~/.agents/skills/`
+- `.codex/profiles/*.toml` → `~/.codex/config.toml`（受管区块合并）
+
+其中 Codex 采用**增量部署**：
+
+- 不会整体覆盖 `~/.codex/`
+- 不会动 `auth.json`、`history.jsonl`、日志、sqlite、cache 等运行态文件
+- 只维护当前项目负责的 `AGENTS` 受管区块、`cc-*` rules 和 `cc-*` skills
+
+各工具的部署特性：
+
+- **Claude Code**：同步到 `~/.claude/`，并保留历史对话记录和个人配置
+- **Gemini CLI**：同步到 `~/.gemini/`，并保留认证信息（如 `oauth_creds.json`）和运行时数据
+- **Codex**：对 `~/.codex/AGENTS.md` 和 `~/.codex/config.toml` 使用受管区块合并；只管理 `~/.codex/rules/` 与 `~/.agents/skills/` 下当前项目同步出去的 `cc-*` 内容；不改用户已有默认模型、provider 或 `base_url`
 
 ---
 
@@ -159,6 +179,7 @@ tools\sync-config.bat
 | `python-dev` | 操作 `.py` 文件 | 类型注解、Pydantic、pytest、uv 工具链 |
 | `bash-style` | 操作 `.sh/Dockerfile/Makefile/.md` 等 | 注释规范、tee 写入、heredoc、脚本规范 |
 | `ops-safety` | 执行系统命令、服务器运维 | 风险说明、回滚方案、问题排查原则 |
+| `redis-safety` | 操作 Redis 相关代码 | 禁用 KEYS、SCAN 替代、Pipeline、TTL 规范 |
 | `size-check` | `/size-check` 或描述"简化代码" | 代码简化审查、全项目文件行数扫描 |
 
 **效果示例**：
@@ -185,6 +206,7 @@ tools\sync-config.bat
 | 命令 | 用途 | 使用示例 |
 |------|------|---------|
 | `/review security` | 安全审查当前分支代码 | `/review security` |
+| `/optimize` | 系统优化（UX/性能/代码/安全/语法糖/最佳实践） | `/optimize` 或 `/optimize perf` |
 | `/new-feature` | 新功能全流程（需求→设计→实现） | `/new-feature 用户导出功能` |
 | `/design doc` | 生成技术设计文档框架 | `/design doc 用户权限模块` |
 | `/requirement doc` | 生成需求文档框架 | `/requirement doc 报表功能` |
@@ -202,6 +224,34 @@ tools\sync-config.bat
 | `/check-toolsearch` | 检查 ToolSearch/WebSearch 是否可用 | `/check-toolsearch` |
 | `/status` | 显示当前配置状态（Rules/Skills/LSP） | `/status` |
 
+### 1.4 Claude Code 推荐插件（声明式安装）
+
+本项目通过 `.claude/plugins.json` 声明了推荐的插件。
+
+| 插件 | 用途 |
+|------|------|
+| `context7` | 精准第三方库文档查询 |
+| `frontend-design` | 生成高质量前端界面代码 |
+| `gopls-lsp` | Go 语言 LSP 支持 |
+| `jdtls-lsp` | Java 语言 LSP 支持 |
+| `playwright` | 浏览器自动化测试 |
+| `pyright-lsp` | Python 语言 LSP 支持 |
+| `security-guidance` | 代码安全审计指导 |
+| `typescript-lsp` | TypeScript/JS LSP 支持 |
+| `claude-hud` | 终端状态栏实时显示 context 用量 |
+| `superpowers` | 结构化开发框架：TDD、调试、头脑风暴 |
+| `code-review` | 多审查者代码审查 + 置信度评分 |
+
+**推荐安装方式：**
+运行 `./tools/sync-config.sh`，脚本会自动检测缺失的插件并引导你一键安装。
+
+**手动安装：**
+```bash
+claude plugin install context7@claude-plugins-official
+claude plugin install frontend-design@claude-plugins-official
+# ... 其他插件同理
+```
+
 ---
 
 ## 2. 常见场景速查
@@ -215,6 +265,7 @@ tools\sync-config.bat
 | 正式代码审查 | `/review` | ⭐⭐ |
 | 复杂 Bug 排查 | `/fix debug 问题描述` | ⭐⭐⭐ |
 | 安全审查 | `/review security` | ⭐⭐⭐ |
+| 系统优化评估 | `/optimize` | ⭐⭐⭐ |
 | 开发新功能 | `/new-feature 功能名` | ⭐⭐⭐ |
 | 新项目初始化 | `/project-init` | ⭐⭐⭐ |
 
@@ -231,6 +282,12 @@ tools\sync-config.bat
 新功能？
 ├─ 完整流程 → /new-feature 功能名
 └─ 只要设计 → /design doc 模块名
+
+系统优化？
+├─ 全量评估 → /optimize
+├─ 仅性能 → /optimize perf
+├─ 仅代码质量 → /optimize code
+└─ 仅 UX → /optimize ux
 ```
 
 ---
@@ -290,6 +347,13 @@ python tools/patch-toolsearch.py --restore # 从备份恢复
 - ❌ 不要在简单任务上使用复杂命令
 - ❌ 不要忽略文档同步提醒
 
+### 4.3 上下文管理（省 token）
+
+- 一个 session 一个任务，避免"顺便再帮我..."加速上下文膨胀
+- 旁路问题用 `/btw`，问答不写入对话历史，不消耗上下文
+- 长任务在 60-70% 时主动 `/compact`，compact 前先把关键决策记到任务文件
+- 大文件用 Grep 定位 + Read 局部读取，避免整文件加载
+
 ---
 
 ## 5. 常见问题
@@ -330,6 +394,7 @@ A: 在 `.claude/skills/` 下创建新目录（如 `rust-dev/`），添加 `SKILL
 │   ├── python-dev/
 │   ├── bash-style/               # Bash 完整规范
 │   ├── ops-safety/               # 运维安全完整规范
+│   ├── redis-safety/             # Redis 安全与性能规范
 │   ├── size-check/               # 代码简化 + 文件行数扫描
 │   └── ruanzhu/                  # 软著源代码生成
 ├── commands/                     # 命令：显式调用
@@ -337,6 +402,7 @@ A: 在 `.claude/skills/` 下创建新目录（如 `rust-dev/`），添加 `SKILL
 │   ├── review.md                 # 代码审查（full/quick/security）
 │   ├── design.md                 # 技术设计（doc/checklist）
 │   ├── requirement.md            # 需求分析（doc/interrogate）
+│   ├── optimize.md               # 系统优化（full/ux/perf/code）
 │   ├── check-toolsearch.md      # ToolSearch 可用性检查
 │   ├── ruanzhu.md                # 软著源代码 DOCX 生成
 │   ├── status.md
@@ -502,22 +568,6 @@ claude
 
 ---
 
-## 8. 部署方法
-
-本项目采用**脚本自动化部署**。无论是首次配置还是后续更新，只需在项目根目录执行：
-
-- **macOS/Linux**: `./tools/sync-config.sh`
-- **Windows**: `tools\sync-config.bat`
-
-脚本会自动将配置同步到你的 `~/.claude/` 目录，并智能保留你的历史对话记录和个人配置。
-
----
-
-## 9. 参考资料
-- [Claude Code 官方文档](https://docs.anthropic.com/claude-code)
-
----
-
 # Part 2: Gemini CLI 配置（前端设计）
 
 > **定位**：Gemini CLI 专注于前端设计和开发，技术栈为 Vue 3 + TypeScript + Element Plus。
@@ -579,32 +629,7 @@ GEMINI.md 自动加载，提供以下保护：
 | `/commit-msg` | 生成 git commit message | `/commit-msg` 或 `/commit-msg all` |
 | `/fix debug` | 复杂问题排查 | `/fix debug 表格数据不显示` |
 
-### 1.4 Claude Code 推荐插件（声明式安装）
-
-本项目通过 `.claude/plugins.json` 声明了推荐的插件。
-
-| 插件 | 用途 |
-|------|------|
-| `context7` | 精准第三方库文档查询 |
-| `frontend-design` | 生成高质量前端界面代码 |
-| `gopls-lsp` | Go 语言 LSP 支持 |
-| `jdtls-lsp` | Java 语言 LSP 支持 |
-| `playwright` | 浏览器自动化测试 |
-| `pyright-lsp` | Python 语言 LSP 支持 |
-| `security-guidance` | 代码安全审计指导 |
-| `typescript-lsp` | TypeScript/JS LSP 支持 |
-
-**推荐安装方式：**
-运行 `./tools/sync-config.sh`，脚本会自动检测缺失的插件并引导你一键安装。
-
-**手动安装：**
-```bash
-claude plugin install context7@claude-plugins-official
-claude plugin install frontend-design@claude-plugins-official
-# ... 其他插件同理
-```
-
-### 1.5 Gemini CLI 推荐扩展（声明式安装）
+### 1.4 Gemini CLI 推荐扩展（声明式安装）
 
 本项目通过 `.gemini/extensions.json` 声明了推荐的扩展。
 
@@ -895,24 +920,257 @@ gemini
 
 ---
 
-## 8. 部署方法
+# Part 3: Codex 配置
 
-本项目采用**脚本自动化部署**。无论是首次配置还是后续更新，只需在项目根目录执行：
+> **定位**：Codex 采用“极薄全局 AGENTS + 审批 rules + 渐进式 skills”的通用方案。项目内 `.codex/` 是权威源，用户级是部署产物。
+
+## 1. 快速开始
+
+首次使用或更新 `.codex/` 后，在项目根目录执行：
 
 - **macOS/Linux**: `./tools/sync-config.sh`
 - **Windows**: `tools\sync-config.bat`
 
-脚本会自动将配置同步到你的 `~/.gemini/` 目录，并智能保留你的认证信息（`oauth_creds.json` 等）和运行时数据。
+脚本会把 `.codex/` 分发到 Codex 官方支持的用户级入口：
+
+| 类型 | 用户级落点 | 作用 |
+|------|-----------|------|
+| Global AGENTS | `~/.codex/AGENTS.md` | 极薄全局原则，常驻加载 |
+| Rules | `~/.codex/rules/` | 审批与危险命令控制 |
+| Skills | `~/.agents/skills/` | 渐进式披露，按需加载 |
+
+**为什么不是直接复制到 `~/.codex/`？**
+
+因为 `~/.codex/` 同时还是 Codex 的运行态目录，会包含认证、历史、日志和缓存。项目只同步受管配置，不覆盖运行态文件。
+
+### 1.1 零费力（自动生效）- Global AGENTS + Rules
+
+**你需要做什么：同步一次配置，然后正常使用 Codex**
+
+这些内容在 Codex 启动后自动生效：
+
+| 组件 | 用户级位置 | 作用 |
+|------|-----------|------|
+| Global AGENTS | `~/.codex/AGENTS.md` | 极薄全局原则：先读代码、最小改动、验证、分层 |
+| Rules | `~/.codex/rules/*.rules` | 审批、危险命令控制、默认安全边界 |
+| Profiles | `~/.codex/config.toml` | 提供 `cc-fast-api`、`cc-balanced`、`cc-deep` 三种预设模式 |
+
+**效果示例**：
+- Codex 会优先先读代码、配置和脚本，再下结论
+- 遇到危险命令或越权执行时，会进入审批控制
+- 可以按任务复杂度切换 `codex -p cc-balanced` 或 `codex -p cc-deep`
+
+### 1.2 低费力（自动触发）- Implicit Skills
+
+**你需要做什么：正常描述任务，或直接操作相关语言文件**
+
+这些技能允许隐式触发，适合日常编码和环境敏感场景：
+
+| 技能 | 触发条件 | 提供的帮助 |
+|------|---------|-----------|
+| `cc-core-defensive` | 普通编码任务 | 最小改动、边界控制、定向验证 |
+| `cc-go-dev` | Go 场景 | 错误处理、包结构、并发、测试 |
+| `cc-java-dev` | Java / Spring 场景 | 异常、集合、服务分层、测试 |
+| `cc-frontend-dev` | React / Vue / TS / CSS 场景 | UI 规范、组件边界、样式、前端测试 |
+| `cc-python-dev` | Python 场景 | 类型注解、Pydantic、pytest、uv |
+| `cc-bash-style` | Shell / Dockerfile / Makefile / 命令片段 | 注释、heredoc、tee、脚本规范 |
+| `cc-ops-safety` | 系统命令、容器、部署、数据库操作 | 风险说明、回滚方案、影响面控制 |
+
+**效果示例**：
+- 写 Go、Java、Python 或前端代码时，会自动带上对应语言规范
+- 修改脚本或命令片段时，会补充 Bash 风格约束
+- 涉及部署、数据库、服务操作时，会优先考虑安全和回滚
+
+### 1.3 中费力（显式调用）- Workflow Skills
+
+**你需要做什么：在 Codex 对话里输入 `$skill-name`**
+
+Codex 的显式 workflow skill 不走 Claude Code 的 `/命令` 风格。本项目统一按 Codex Skills 的显式调用方式使用，例如：`$commit-msg`、`$optimize perf`、`$new-feature 用户导出功能`。其中 `review` 和 `status` 为避免与 Codex 内置能力混淆，保留 `cc-` 前缀：`$cc-review`、`$cc-status`。
+
+如果刚同步完 skills 但没看到新入口，重启 Codex 即可。
+
+#### 高频 skill（日常使用）
+
+| 场景 | Claude Code | Codex |
+|------|-------------|-------|
+| 修个小 Bug | `/fix 登录接口返回 500` | `$fix 登录接口返回 500` |
+| 快速代码审查 | `/review quick` | `$cc-review quick` |
+| 正式代码审查 | `/review` | `$cc-review` |
+| 生成 commit message | `/commit-msg` 或 `/commit-msg all` | `$commit-msg` 或 `$commit-msg all` |
+
+#### 中频 skill（按需使用）
+
+| 场景 | Claude Code | Codex |
+|------|-------------|-------|
+| 安全审查 | `/review security` | `$cc-review security` |
+| 系统优化 | `/optimize` 或 `/optimize perf` | `$optimize` 或 `$optimize perf` |
+| 新功能全流程 | `/new-feature 用户导出功能` | `$new-feature 用户导出功能` |
+| 技术设计 | `/design doc 用户权限模块` | `$design doc 用户权限模块` |
+| 需求澄清 | `/requirement interrogate 用户要导出数据` | `$requirement interrogate 用户要导出数据` |
+| 代码体量/复杂度扫描 | `/size-check` | `$size-check` |
+
+#### 低频 skill（特定场景）
+
+| 场景 | Claude Code | Codex |
+|------|-------------|-------|
+| 新项目初始化 | `/project-init` | `$project-init` |
+| 检查配置状态 | `/status` | `$cc-status` |
+
+## 2. 常见场景速查
+
+| 场景 | 推荐方式 | 费力度 |
+|------|---------|--------|
+| 日常写代码 | 直接描述任务，Global AGENTS + Rules + Implicit Skills 自动生效 | ⭐ |
+| 修个小 Bug | `$fix 问题描述` | ⭐⭐ |
+| 提交前快速看看 | `$cc-review quick` | ⭐⭐ |
+| 生成 commit message | `$commit-msg` | ⭐⭐ |
+| 正式代码审查 | `$cc-review` | ⭐⭐ |
+| 安全审查 | `$cc-review security` | ⭐⭐⭐ |
+| 系统优化评估 | `$optimize` | ⭐⭐⭐ |
+| 开发新功能 | `$new-feature 功能名` | ⭐⭐⭐ |
+| 新项目初始化 | `$project-init` | ⭐⭐⭐ |
+| 检查 Codex 配置是否生效 | `$cc-status` | ⭐⭐ |
+
+```text
+遇到 Bug？
+├─ 简单 Bug → $fix 问题描述
+└─ 复杂问题排查 → $fix debug 问题描述
+
+代码审查？
+├─ 快速看看 → $cc-review quick
+├─ 正式审查 → $cc-review
+└─ 安全审查 → $cc-review security
+
+新功能？
+├─ 完整流程 → $new-feature 功能名
+└─ 只要设计 → $design doc 模块名
+
+系统优化？
+├─ 全量评估 → $optimize
+├─ 仅性能 → $optimize perf
+├─ 仅代码质量 → $optimize code
+└─ 仅 UX → $optimize ux
+
+配置是否生效？
+└─ 查看状态 → $cc-status
+```
+
+## 3. 渐进式披露设计
+
+Codex 配置按三层拆分：
+
+| 层级 | 位置 | 说明 |
+|------|------|------|
+| 常驻最小层 | `.codex/global/AGENTS.md` | 只保留跨项目都成立的总纲 |
+| 审批控制层 | `.codex/global/rules/` | 只放允许/提示/禁止执行的命令规则 |
+| 主规范层 | `.codex/skills/` | 绝大多数规范通过 skills 按需加载 |
+| 模式切换层 | `.codex/profiles/*.toml` | 以具名 profile 提供 fast / balanced / deep 模式，不改用户默认值 |
+
+skills 又分为两类：
+
+- **隐式技能**：如 `cc-core-defensive`、`cc-go-dev`、`cc-frontend-dev`，普通编码场景可自动命中
+- **显式 workflow skills**：目录仍保留 `cc-*` 前缀，但显式调用名尽量使用短名，如 `fix`、`design`、`requirement`、`size-check`、`commit-msg`、`optimize`、`new-feature`、`project-init`；`review` 和 `status` 暂保留 `cc-*` 以避免与 Codex 内置命令混淆
+
+新增的显式 workflow skills 主要覆盖：
+
+| Skill | 用途 |
+|------|------|
+| `commit-msg` | 分析 staged 或 all diff，生成结构化 commit message |
+| `optimize` | 做 `full/ux/perf/code` 四种模式的优化扫描，默认只输出报告 |
+| `cc-status` | 检查项目权威源、用户级配置、profiles 和同步缺口 |
+| `new-feature` | 需求澄清 → 设计 → 实现 → 验证，任务状态持久化到项目内 `.codex/tasks/` |
+| `project-init` | 初始化新仓库：生成项目级 `AGENTS.md`，并按需落脚手架模板 |
+
+> 说明：Codex 相关脚手架模板不再集中放在根 `.codex/templates/`；`project-init` 需要的 `AGENTS.md`、Docker、compose、restart 等资源跟随 skill 放在 `cc-project-init/assets/`，这样同步后即可直接使用。
+
+### Profile 模式
+
+项目内还维护了 3 个 Codex profile：
+
+| Profile | 用途 | 建议配置 |
+|---------|------|---------|
+| `cc-fast-api` | API key 环境下的快模式 | `codex-mini-latest` |
+| `cc-balanced` | 日常主力 | `gpt-5.3-codex` + `medium` |
+| `cc-deep` | 复杂审查、深度分析 | `gpt-5.4` + `xhigh` |
+
+使用方式：
+
+```bash
+codex -p cc-fast-api
+codex exec -p cc-balanced "review this change"
+codex -p cc-deep
+```
+
+> 说明：这里的 `cc-fast-api` 是**项目自定义的快 profile**，适合 API key 场景；它不是把用户默认配置切到官方 Fast mode credits。这样可以在不动顶层默认配置的前提下，按需切换速度与深度。
+
+## 4. 目录结构
+
+```text
+.codex/
+├── global/
+│   ├── AGENTS.md
+│   └── rules/
+│       ├── cc-safe-default.rules
+│       └── cc-dangerous-ops.rules
+├── profiles/
+│   ├── cc-fast-api.toml
+│   ├── cc-balanced.toml
+│   └── cc-deep.toml
+├── skills/
+│   ├── cc-core-defensive/
+│   ├── cc-bash-style/
+│   ├── cc-ops-safety/
+│   ├── cc-go-dev/
+│   ├── cc-java-dev/
+│   ├── cc-frontend-dev/
+│   ├── cc-python-dev/
+│   ├── cc-fix/
+│   ├── cc-review/
+│   ├── cc-design/
+│   ├── cc-requirement/
+│   ├── cc-size-check/
+│   ├── cc-commit-msg/
+│   ├── cc-optimize/
+│   ├── cc-status/
+│   ├── cc-new-feature/
+│   └── cc-project-init/
+├── templates/
+├── tasks/
+└── manifests/
+    └── sync-map.md
+```
+
+### 关键原则
+
+- `.codex/` 是项目级权威源
+- `~/.codex/` 和 `~/.agents/skills/` 是部署产物
+- `~/.codex/config.toml` 只增量合并本项目的具名 profiles，不覆盖用户当前默认值
+- `AGENTS.md` 必须薄，语言与流程细节交给 skills
+- rules 只负责审批和危险动作控制，不承载编码规范
 
 ---
 
-## 9. 参考资料
+## 参考资料
+
+### Claude Code
+
+- [Claude Code 官方文档](https://docs.anthropic.com/claude-code)
+
+### Gemini CLI
 
 - [Gemini CLI 官方文档](https://geminicli.com/docs/)
 - [Gemini CLI GitHub](https://github.com/google-gemini/gemini-cli)
 - [Gemini CLI 认证指南](https://geminicli.com/docs/get-started/authentication/)
 - [Vue 3 官方文档](https://vuejs.org/)
 - [Element Plus 文档](https://element-plus.org/)
+
+### Codex
+
+- [OpenAI Codex 文档](https://developers.openai.com/codex/)
+- [Codex 配置基础](https://developers.openai.com/codex/config-basic)
+- [Codex Skills](https://developers.openai.com/codex/skills)
+- [Codex AGENTS.md 指南](https://developers.openai.com/codex/guides/agents-md)
+- [Codex Rules](https://developers.openai.com/codex/rules)
 
 ---
 
@@ -931,17 +1189,34 @@ gemini
 
 ## 许可声明
 
-本项目采用自定义许可条款：
+本项目采用 `PolyForm Noncommercial 1.0.0`：
 
 | 用途 | 条款 |
 |------|------|
-| **非商业用途** | 免费使用、修改、分发 |
-| **商业用途** | 需获得作者书面授权 |
-| **转载/二次开发** | 需注明出处并保留许可声明 |
+| **非商业用途** | 可使用、修改、分发本项目 |
+| **商业用途** | 不在本许可证授权范围内，需单独获得商业授权 |
+| **转载/二次开发** | 需附带许可证文本或其 URL，并保留项目提供的 `NOTICE` |
 
-未经授权的商业使用，作者保留追究法律责任的权利。
+这是一份 `source-available` 非商用许可证，不属于 OSI 定义下的开源许可证。
+
+商业授权咨询：`作者`
 
 详见 [LICENSE](./LICENSE)
+  
+项目附带的 [NOTICE](./NOTICE) 用于保留版权与出处信息。
+
+### 许可 FAQ
+
+| 场景 | 当前建议 |
+|------|---------|
+| 个人学习、研究、实验、业余项目 | 通常属于非商业用途，可在本许可证下使用 |
+| 学校、公益组织、公共研究机构使用 | 通常属于非商业用途，可在本许可证下使用 |
+| 公司内部评估、内部工具、团队日常使用 | 建议按商业用途处理，先联系作者获取商业授权 |
+| 面向客户交付、代开发、SaaS 托管、付费咨询或付费培训 | 建议按商业用途处理，先联系作者获取商业授权 |
+| 二次开发后公开发布 | 可以，但需附带许可证文本或其 URL，并保留 `NOTICE` |
+| 拿不准是否属于商业用途 | 不要自行假设，先联系 `作者` 确认 |
+
+> 说明：这里的 FAQ 是项目维护者对当前许可策略的使用指引，不替代正式法律意见。若你希望未来允许“企业内部免费使用”，可以考虑改用 `PolyForm Internal Use` 或 `PolyForm Small Business` 这类更贴近该目标的标准许可证。
 
 ---
 

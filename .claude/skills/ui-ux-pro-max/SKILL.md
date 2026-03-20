@@ -1,15 +1,7 @@
 ---
 name: ui-ux-pro-max
-description: 专业级 UI/UX 设计规范，生成高质量、有辨识度的前端界面。覆盖视觉层次、配色体系、排版节奏、交互微动效、响应式适配等。
-version: v1.0
-paths:
-  - "**/*.vue"
-  - "**/*.tsx"
-  - "**/*.jsx"
-  - "**/*.css"
-  - "**/*.scss"
-  - "**/*.less"
-  - "**/*.html"
+description: 专业级 UI/UX 设计规范，需要高质量界面设计时手动触发或描述"设计感/专业UI"时自动触发。覆盖视觉层次、配色体系、排版节奏、交互微动效、响应式适配等。日常前端开发由 frontend-dev skill + frontend-design 插件覆盖。
+version: v1.1
 ---
 
 # UI/UX Pro Max — 专业级界面设计规范

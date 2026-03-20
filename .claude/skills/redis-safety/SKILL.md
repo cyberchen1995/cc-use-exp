@@ -1,5 +1,6 @@
 ---
-paths: "**/*.{go,java,py,ts,js}"
+name: redis-safety
+description: 当用户操作 Redis 相关代码（go-redis、Jedis、redis-py、ioredis）时触发。提供 Redis 安全与性能规范。
 ---
 # Redis 安全规范
 

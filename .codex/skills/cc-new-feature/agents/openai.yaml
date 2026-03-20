@@ -1,0 +1,6 @@
+interface:
+  display_name: "new-feature"
+  short_description: "显式推进新功能：需求澄清、设计、实现、验证与恢复。"
+  default_prompt: "Use $new-feature to check for resumable tasks in .codex/tasks before asking the minimum clarifying questions for scope, edge cases, and dependencies."
+policy:
+  allow_implicit_invocation: false

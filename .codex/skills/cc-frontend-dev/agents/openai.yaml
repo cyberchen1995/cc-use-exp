@@ -1,0 +1,5 @@
+interface:
+  display_name: "CC Frontend Dev"
+  short_description: "Vue/React/TS/CSS、组件边界与 UI 规范。"
+policy:
+  allow_implicit_invocation: true

@@ -61,22 +61,10 @@
       "description": "结构化开发框架：TDD、系统化调试、头脑风暴、子代理驱动开发"
     },
     {
-      "id": "planning-with-files",
-      "marketplace": "OthmanAdi",
-      "name": "Planning with Files",
-      "description": "Manus 风格持久化 markdown 规划：task_plan / findings / progress 三文件模式"
-    },
-    {
-      "id": "best-minds",
-      "marketplace": "brucexo",
-      "name": "Best Minds",
-      "description": "模拟器思维：让 Claude 模拟领域顶级专家视角分析和回答问题"
-    },
-    {
-      "id": "skill-creator",
+      "id": "code-review",
       "marketplace": "claude-plugins-official",
-      "name": "Skill Creator",
-      "description": "技能开发工具包：创建、评估、优化、基准测试 Claude Code skills"
+      "name": "Code Review",
+      "description": "多审查者代码审查：4 个独立审查视角 + 置信度评分"
     }
   ]
 }
