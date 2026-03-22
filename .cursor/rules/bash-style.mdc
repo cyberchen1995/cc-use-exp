@@ -1,11 +1,11 @@
 ---
 description: Bash 核心规范：禁止行尾注释、文件写入用 tee、Heredoc 默认禁止变量展开
-globs: "**/*.sh,**/Dockerfile,**/Makefile,**/*.yml,**/*.yaml,**/*.md"
+globs: "**/*.sh,**/Dockerfile,**/Makefile,**/*.yml,**/*.yaml"
 alwaysApply: false
 ---
 # Bash 核心规范
 
-> 详细规范见 skills `cc-bash-style`，操作 .sh/.md/Dockerfile 等文件时自动加载。
+> 详细规范见 skills `bash-style`，操作 shell 脚本、Dockerfile、Makefile、YAML 文件时自动加载。
 
 ---
 
@@ -20,7 +20,7 @@ curl -X POST https://api.example.com # 发送请求
 curl -X POST https://api.example.com
 ```
 
-**适用范围**：.sh 脚本、Markdown 代码块、Dockerfile、Makefile
+**适用范围**：.sh 脚本、Dockerfile、Makefile、YAML
 
 ---
 

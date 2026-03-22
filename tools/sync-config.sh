@@ -6,6 +6,7 @@ fi
 set -euo pipefail
 
 # 同步 .claude、.gemini、.codex 和 .cursor 配置到用户根目录
+# 说明：Cursor 的 rules 同步为兼容性补充；项目内 .cursor/rules 仍是主路径。
 
 # 颜色输出
 RED='\033[0;31m'
@@ -435,7 +436,7 @@ if [[ -d "${SCRIPT_DIR}/.cursor" ]]; then
     CURSOR_SKILLS_SYNCED=0
     CURSOR_COMMANDS_SYNCED=0
 
-    # rules → ~/.cursor/rules/
+    # rules → ~/.cursor/rules/（兼容性同步；项目内 .cursor/rules 仍是主路径）
     if [[ -d "$CURSOR_RULES_SRC" ]]; then
         new_manifest="$(mktemp)"
         rule_list="$(mktemp)"
@@ -521,11 +522,11 @@ if [[ -d "${SCRIPT_DIR}/.cursor" ]]; then
         done
     fi
 
-    print_line "${GREEN}  ✓ rules: ${CURSOR_RULES_SYNCED} 个，同步到 ~/.cursor/rules/${NC}"
+    print_line "${GREEN}  ✓ rules: ${CURSOR_RULES_SYNCED} 个，同步到 ~/.cursor/rules/（兼容性补充）${NC}"
     print_line "${GREEN}  ✓ skills: ${CURSOR_SKILLS_SYNCED} 个，同步到 ~/.cursor/skills/${NC}"
-    print_line "${GREEN}  ✓ commands: ${CURSOR_COMMANDS_SYNCED} 个，同步到 ~/.cursor/skills/（命令式技能）${NC}"
+    print_line "${GREEN}  ✓ commands: ${CURSOR_COMMANDS_SYNCED} 个，同步到 ~/.cursor/skills/（命令式技能兼容层）${NC}"
     print_line "${GREEN}  ✓ templates: 同步到 ~/.cursor/templates/${NC}"
-    print_line "${YELLOW}  已保留 ~/.cursor 运行态文件（settings/extensions/cache）${NC}"
+    print_line "${YELLOW}  项目内 .cursor/rules 仍是主路径；已保留 ~/.cursor 运行态文件（settings/extensions/cache）${NC}"
 else
     print_line "${YELLOW}[Cursor] 源目录不存在，跳过${NC}"
 fi

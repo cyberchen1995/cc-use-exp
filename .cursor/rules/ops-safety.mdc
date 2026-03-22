@@ -5,7 +5,7 @@ alwaysApply: false
 ---
 # 运维安全核心规则
 
-> 详细规范见 skills `cc-ops-safety`，执行系统命令时自动加载。
+> 详细规范见 skills `ops-safety`，执行系统命令时自动加载。
 
 ---
 

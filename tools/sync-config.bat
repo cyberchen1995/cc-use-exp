@@ -2,6 +2,7 @@
 setlocal enabledelayedexpansion
 
 REM 同步 .claude、.gemini、.codex 和 .cursor 配置到用户根目录
+REM 说明：Cursor 的 rules 同步为兼容性补充；项目内 .cursor\rules 仍是主路径。
 
 set "HOME_DIR=%USERPROFILE%"
 set "CODEX_MANAGED_START=<!-- cc-use-exp codex managed:start -->"
@@ -280,7 +281,7 @@ if exist "%SCRIPT_DIR%\.cursor" (
     set "CURSOR_SKILLS_SYNCED=0"
     set "CURSOR_COMMANDS_SYNCED=0"
 
-    REM rules
+    REM rules（兼容性同步；项目内 .cursor\rules 仍是主路径）
     if exist "!CURSOR_RULES_MANIFEST!" (
         for /f "usebackq delims=" %%f in ("!CURSOR_RULES_MANIFEST!") do (
             if exist "%HOME_DIR%\.cursor\rules\%%f" del /f /q "%HOME_DIR%\.cursor\rules\%%f"
@@ -329,11 +330,11 @@ if exist "%SCRIPT_DIR%\.cursor" (
         )
     )
 
-    echo   [√] rules: !CURSOR_RULES_SYNCED! 个，同步到 ~/.cursor/rules/
+    echo   [√] rules: !CURSOR_RULES_SYNCED! 个，同步到 ~/.cursor/rules/（兼容性补充）
     echo   [√] skills: !CURSOR_SKILLS_SYNCED! 个，同步到 ~/.cursor/skills/
-    echo   [√] commands: !CURSOR_COMMANDS_SYNCED! 个，同步到 ~/.cursor/skills/
+    echo   [√] commands: !CURSOR_COMMANDS_SYNCED! 个，同步到 ~/.cursor/skills/（命令式技能兼容层）
     echo   [√] templates: 同步到 ~/.cursor/templates/
-    echo   已保留 ~/.cursor 运行态文件（settings/extensions/cache）
+    echo   项目内 .cursor/rules 仍是主路径；已保留 ~/.cursor 运行态文件（settings/extensions/cache）
 ) else (
     echo [Cursor] 源目录不存在，跳过
 )
