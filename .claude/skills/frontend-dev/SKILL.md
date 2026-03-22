@@ -169,6 +169,32 @@ export interface ApiResponse<T = unknown> {
 
 ---
 
+## API 调用类型安全
+
+| 规则 | 说明 |
+|------|------|
+| ✅ API 工具函数支持泛型 | `get<T>(url): Promise<T>` 而非返回 `unknown` |
+| ✅ 调用处指定泛型或断言 | `get<UserInfo>(url)` 或 `data as typeof ref.value` |
+| ❌ 禁止 `as any` 绕过 | 掩盖类型问题，后续维护踩坑 |
+
+```typescript
+// ❌ get() 返回 unknown，赋值报 TS2322
+const data = await get('/contact/config')
+contact.value = data
+
+// ❌ as any 绕过
+contact.value = data as any
+
+// ✅ 泛型约束（推荐）
+const data = await get<ContactConfig>('/contact/config')
+contact.value = data
+
+// ✅ 类型断言（最小改动）
+contact.value = data as typeof contact.value
+```
+
+---
+
 ## 性能优化
 
 | 场景 | 方案 |
