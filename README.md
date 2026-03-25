@@ -276,7 +276,6 @@ tools\sync-config.bat
 | `pyright-lsp` | Python 语言 LSP 支持 |
 | `security-guidance` | 代码安全审计指导 |
 | `typescript-lsp` | TypeScript/JS LSP 支持 |
-| `claude-hud` | 终端状态栏实时显示 context 用量 |
 | `superpowers` | 结构化开发框架：TDD、调试、头脑风暴 |
 | `code-review` | 多审查者代码审查 + 置信度评分 |
 
@@ -1116,7 +1115,7 @@ skills 又分为两类：
 | `commit-msg` | 分析 staged 或 all diff，生成结构化 commit message |
 | `optimize` | 做 `full/ux/perf/code` 四种模式的优化扫描，默认只输出报告 |
 | `cc-status` | 检查项目权威源、用户级配置、profiles 和同步缺口 |
-| `new-feature` | 需求澄清 → 设计 → 实现 → 验证，任务状态持久化到项目内 `.codex/tasks/` |
+| `new-feature` | 需求澄清 → 设计 → 实现 → 验证，任务状态持久化到项目内 `.codex/tasks/`，已完成任务会归档到 `.codex/tasks/archived/` |
 | `project-init` | 初始化新仓库：生成项目级 `AGENTS.md`，并按需落脚手架模板 |
 
 > 说明：Codex 相关脚手架模板不再集中放在根 `.codex/templates/`；`project-init` 需要的 `AGENTS.md`、Docker、compose、restart 等资源跟随 skill 放在 `cc-project-init/assets/`，这样同步后即可直接使用。

@@ -2,6 +2,11 @@
 description: 新功能全流程（需求审问 → 设计 → 实现）
 ---
 
+> **流程主权声明**：本命令是用户显式调用的完整工作流，拥有从需求到实现的全流程控制权。
+> 禁止在本流程执行期间调用 `superpowers:brainstorming`、`superpowers:writing-plans` 或任何会接管设计/实现流程的外部 skill。
+> 设计文档必须写入 `.claude/tasks/`，不得写入 `docs/superpowers/` 或其他路径。
+> 本声明依据 superpowers 自身的优先级规则：用户显式指令 > superpowers skills。
+
 一站式完成新功能开发，支持中断恢复。
 
 ## 输入

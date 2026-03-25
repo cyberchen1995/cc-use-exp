@@ -49,12 +49,6 @@
       "description": "TypeScript/JavaScript LSP 支持"
     },
     {
-      "id": "claude-hud",
-      "marketplace": "jarrodwatts",
-      "name": "Claude HUD",
-      "description": "终端状态栏实时显示 context 用量、工具状态、agent 进度"
-    },
-    {
       "id": "superpowers",
       "marketplace": "claude-plugins-official",
       "name": "Superpowers",
