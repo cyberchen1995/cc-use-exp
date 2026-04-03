@@ -1,5 +1,5 @@
 interface:
   display_name: "CC Core Defensive"
-  short_description: "通用防御性编码：最小改动、边界控制、定向验证。"
+  short_description: "通用防御性编码：最小改动、真实边界处理、避免过度兜底。"
 policy:
   allow_implicit_invocation: true

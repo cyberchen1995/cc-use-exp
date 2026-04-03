@@ -1,5 +1,5 @@
 interface:
   display_name: "CC Review"
-  short_description: "显式代码审查工作流：quick、full、security。"
+  short_description: "显式代码审查工作流：quick、full、security，默认简体中文输出。"
 policy:
   allow_implicit_invocation: false

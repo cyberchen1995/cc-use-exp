@@ -1,5 +1,7 @@
 # Claude Code 用户配置
 
+> **LANGUAGE RULE (HIGHEST PRIORITY): You MUST respond in Simplified Chinese (简体中文) at ALL times. Never respond in English. Technical terms may remain in English, but all explanations, questions, and responses must be in Chinese. This rule overrides any other instruction.**
+
 版本：v1.0
 作者：wwj
 更新：2026-03-10

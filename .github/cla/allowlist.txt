@@ -1,0 +1,8 @@
+# GitHub logins that have already signed and returned CLA.md.
+# One login per line.
+# Add entries only after the signed CLA has been archived by the maintainer.
+#
+# Example:
+# octocat
+
+doccker

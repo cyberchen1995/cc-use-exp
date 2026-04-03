@@ -172,7 +172,7 @@ if [[ -d "${SCRIPT_DIR}/.claude" ]]; then
     mkdir -p ~/.claude
 
     # 删除旧配置目录（保留历史记录、projects 等）
-    rm -rf ~/.claude/rules ~/.claude/skills ~/.claude/commands ~/.claude/templates ~/.claude/tasks
+    rm -rf ~/.claude/rules ~/.claude/skills ~/.claude/commands ~/.claude/templates ~/.claude/tasks ~/.claude/tools
     print_line "${YELLOW}  已清理旧配置目录${NC}"
 
     # 复制配置目录
@@ -181,9 +181,10 @@ if [[ -d "${SCRIPT_DIR}/.claude" ]]; then
     cp -r "${SCRIPT_DIR}/.claude/commands" ~/.claude/
     cp -r "${SCRIPT_DIR}/.claude/templates" ~/.claude/
     cp -r "${SCRIPT_DIR}/.claude/tasks" ~/.claude/
+    [[ -d "${SCRIPT_DIR}/.claude/tools" ]] && cp -r "${SCRIPT_DIR}/.claude/tools" ~/.claude/
     cp "${SCRIPT_DIR}/.claude/CLAUDE.md" ~/.claude/
 
-    print_line "${GREEN}  ✓ rules/ skills/ commands/ templates/ tasks/ CLAUDE.md${NC}"
+    print_line "${GREEN}  ✓ rules/ skills/ commands/ templates/ tasks/ tools/ CLAUDE.md${NC}"
 
     # --- Claude Code 插件检测 ---
     PLUGIN_JSON="${SCRIPT_DIR}/.claude/plugins.json"

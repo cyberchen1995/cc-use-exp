@@ -41,7 +41,8 @@ description: 检查 ToolSearch（WebSearch）是否可用
 2. Claude Code 版本不支持
 
 解决方案：
-  python tools/patch-toolsearch.py
+  python tools/patch-toolsearch.py 或者
+  python3 tools/patch-toolsearch.py
 
 脚本会自动检测安装位置并解除域名限制，执行后重启 claude 即可。
 ```

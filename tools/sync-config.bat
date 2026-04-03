@@ -30,6 +30,7 @@ if exist "%SCRIPT_DIR%\.claude" (
     if exist "%HOME_DIR%\.claude\commands" rmdir /s /q "%HOME_DIR%\.claude\commands"
     if exist "%HOME_DIR%\.claude\templates" rmdir /s /q "%HOME_DIR%\.claude\templates"
     if exist "%HOME_DIR%\.claude\tasks" rmdir /s /q "%HOME_DIR%\.claude\tasks"
+    if exist "%HOME_DIR%\.claude\tools" rmdir /s /q "%HOME_DIR%\.claude\tools"
 
     echo   已清理旧配置目录
 
@@ -38,10 +39,11 @@ if exist "%SCRIPT_DIR%\.claude" (
     if exist "%SCRIPT_DIR%\.claude\commands" xcopy /y /e /i /q "%SCRIPT_DIR%\.claude\commands" "%HOME_DIR%\.claude\commands"
     if exist "%SCRIPT_DIR%\.claude\templates" xcopy /y /e /i /q "%SCRIPT_DIR%\.claude\templates" "%HOME_DIR%\.claude\templates"
     if exist "%SCRIPT_DIR%\.claude\tasks" xcopy /y /e /i /q "%SCRIPT_DIR%\.claude\tasks" "%HOME_DIR%\.claude\tasks"
+    if exist "%SCRIPT_DIR%\.claude\tools" xcopy /y /e /i /q "%SCRIPT_DIR%\.claude\tools" "%HOME_DIR%\.claude\tools"
 
     if exist "%SCRIPT_DIR%\.claude\CLAUDE.md" copy /y "%SCRIPT_DIR%\.claude\CLAUDE.md" "%HOME_DIR%\.claude\" >nul
 
-    echo   [√] rules/ skills/ commands/ templates/ tasks/ CLAUDE.md
+    echo   [√] rules/ skills/ commands/ templates/ tasks/ tools/ CLAUDE.md
 
     REM --- Claude Code 插件检测 ---
     set "PLUGIN_JSON=%SCRIPT_DIR%\.claude\plugins.json"

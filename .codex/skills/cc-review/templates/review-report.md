@@ -1,7 +1,7 @@
-## Findings
+## 发现的问题
 
-## Open Questions
+## 待确认问题
 
-## Residual Risk
+## 残余风险
 
-## Summary
+## 总结
