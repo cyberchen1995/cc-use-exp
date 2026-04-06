@@ -318,6 +318,32 @@ public class UserController {
 | ✅ optional-auth 路径遇到无效/过期/不完整 token 时降级为匿名访问 | 不应返回 401/403 |
 | ❌ 禁止部分凭证用户体验差于匿名用户 | 如：临时 token 在公开接口返回 403 |
 
+### 循环依赖防范（Spring Boot 3.x）
+
+Spring Boot 3.x 默认禁止构造器循环依赖。从大 Service 拆分子 Service 时必须检查依赖方向。
+
+| 处理方式 | 优先级 | 适用场景 |
+|----------|--------|---------|
+| 提取公共方法到独立工具类 | ✅ 首选 | 纯工具方法（如 resolveTenantIds） |
+| `@Lazy` 字段注入 | ⚠️ 应急 | 确实需要双向调用 |
+| `Function<>` 回调 | ⚠️ 备选 | 灵活但增加复杂度 |
+
+```java
+// ❌ 拆分后子服务回调父服务 → 循环依赖
+@RequiredArgsConstructor
+public class ReportInvoiceService {
+    private final ReportService reportService; // 启动失败！
+}
+
+// ✅ 提取公共方法到独立类
+@Component
+public class TenantHelper {
+    public List<Long> resolveTenantIds(Long tenantId) { ... }
+}
+```
+
+> 详见 `refactor-safety` skill - 陷阱 #5
+
 ---
 
 ## 输入校验规范

@@ -227,6 +227,53 @@ const columns = ['订单编号', '订单日期', '材料名称', '材料数量',
 - [x] 没有多余列
 ```
 
+### 5. 提取子模块导致循环依赖
+
+**场景**：从大服务/组件拆分子模块时，子模块需要回调父模块的方法
+
+**错误示例**：
+```java
+// ❌ ReportService 拆分出 ReportInvoiceService
+// 但 ReportInvoiceService 又需要调用 ReportService.resolveTenantIds()
+@Service
+@RequiredArgsConstructor
+public class ReportInvoiceService {
+    private final ReportService reportService; // 循环依赖！
+}
+```
+
+**正确做法（按优先级）**：
+```java
+// ✅ 方案1：提取公共方法到独立工具类（推荐）
+@Component
+public class TenantHelper {
+    public List<Long> resolveTenantIds(Long tenantId) { ... }
+}
+
+// ✅ 方案2：@Lazy 字段注入（应急）
+@Service
+public class ReportInvoiceService {
+    @Autowired @Lazy
+    private ReportService reportService;
+}
+
+// ✅ 方案3：函数式回调
+public void process(Function<Long, List<Long>> tenantResolver) { ... }
+```
+
+**检查清单**：
+- [ ] 画依赖图：拆分后是否存在 A → B → A 的循环？
+- [ ] 子模块回调父模块的方法是否为纯工具方法？是 → 提取到独立类
+- [ ] 依赖方向是否单向：父 → 子（禁止子 → 父）
+- [ ] Spring Boot 3.x 默认禁止构造器循环依赖
+
+**不仅限于 Spring**：
+- Go：包级循环引用（编译错误）→ 提取公共包
+- Vue：组件循环引用 → 异步组件或提取公共逻辑到 composables
+- TypeScript：模块循环引用 → 提取公共模块
+
+---
+
 ### 4. 字段名推测重构（极其隐蔽）
 
 **场景**：类型定义中有多个相似字段，重构时选错了
