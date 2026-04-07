@@ -270,6 +270,11 @@ tools\sync-config.bat
 | `/patch` | Claude Code 综合补丁（一键全部） | `/patch` 或 `/patch status` |
 | `/status` | 显示当前配置状态（Rules/Skills/LSP） | `/status` |
 
+
+`/cache-patch`验证效果:
+![cache-check](./pic/cache-check.png)
+
+
 注：`/patch` 只是让 CC 绕过 Chrome 订阅检查。如需要自定义渠道的插件，可以扫码联系作者免费获取插件地址，仅供学习使用。
 
 ![Chrome 插件独立配置界面（可指定自定义模型）](./pic/cc-chrome-plugin-1.png)
