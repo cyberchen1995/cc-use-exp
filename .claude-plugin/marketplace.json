@@ -1,0 +1,27 @@
+{
+  "name": "cc-use-exp",
+  "owner": {
+    "name": "wwj",
+    "email": "doccker@users.noreply.github.com"
+  },
+  "metadata": {
+    "description": "AI 编码助手配置体系 - 支持 Claude Code、Gemini CLI、Codex、Cursor 的统一配置模板",
+    "version": "1.0.24"
+  },
+  "plugins": [
+    {
+      "name": "cc-use-exp",
+      "source": "./",
+      "description": "AI 编码助手配置体系 - 跨工具的 rules、skills、commands 配置模板",
+      "version": "1.0.24",
+      "author": {
+        "name": "wwj"
+      },
+      "homepage": "https://github.com/doccker/cc-use-exp",
+      "repository": "https://github.com/doccker/cc-use-exp",
+      "license": "PolyForm-Noncommercial-1.0.0",
+      "keywords": ["claude-code", "gemini-cli", "codex", "cursor", "ai-coding", "configuration"],
+      "category": "productivity"
+    }
+  ]
+}

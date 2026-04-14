@@ -1,0 +1,15 @@
+{
+  "name": "cc-use-exp",
+  "description": "AI 编码助手配置体系 - 跨工具的 rules、skills、commands 配置模板",
+  "version": "1.0.24",
+  "author": {
+    "name": "wwj"
+  },
+  "homepage": "https://github.com/doccker/cc-use-exp",
+  "repository": "https://github.com/doccker/cc-use-exp",
+  "license": "PolyForm-Noncommercial-1.0.0",
+  "keywords": ["claude-code", "gemini-cli", "codex", "cursor", "ai-coding", "configuration"],
+  "category": "productivity",
+  "skills": ".claude/skills",
+  "commands": ".claude/commands"
+}
