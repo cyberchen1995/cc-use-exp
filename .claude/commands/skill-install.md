@@ -13,21 +13,22 @@ description: 一键安装 cc-use-exp 配置体系
 ### 第 1 步：检查安装状态
 
 ```bash
-# 检查两种可能的安装位置
+# 检查三种可能的安装位置
 EXTERNAL_DIR="$HOME/.claude/external/cc-use-exp"
-PLUGIN_DIR="$HOME/.claude/plugins/installed/cc-use-exp@cc-use-exp"
+PLUGIN_INSTALLED="$HOME/.claude/plugins/installed/cc-use-exp@cc-use-exp"
+PLUGIN_CACHE=$(find "$HOME/.claude/plugins/cache" -name "cc-use-exp" -type d 2>/dev/null | head -1)
 
-if [ -d "$PLUGIN_DIR" ]; then
+if [ -n "$PLUGIN_CACHE" ] || [ -d "$PLUGIN_INSTALLED" ]; then
   echo "✅ 检测到通过 Plugin Marketplace 安装"
   echo ""
-  echo "安装位置: $PLUGIN_DIR"
+  echo "安装位置: ${PLUGIN_CACHE:-$PLUGIN_INSTALLED}"
   echo ""
   echo "📝 说明："
   echo "- Plugin Marketplace 安装会自动同步 skills 和 commands"
   echo "- 如需完整配置（rules、templates 等），请继续执行同步"
   echo ""
   echo "是否执行完整同步？"
-  INSTALL_DIR="$PLUGIN_DIR"
+  INSTALL_DIR="${PLUGIN_CACHE:-$PLUGIN_INSTALLED}"
 elif [ -d "$EXTERNAL_DIR" ]; then
   echo "✅ 检测到通过 external 方式安装"
   echo ""
