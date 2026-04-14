@@ -13,33 +13,52 @@ description: 一键安装 cc-use-exp 配置体系
 ### 第 1 步：检查安装状态
 
 ```bash
-INSTALL_DIR="$HOME/.claude/external/cc-use-exp"
+# 检查两种可能的安装位置
+EXTERNAL_DIR="$HOME/.claude/external/cc-use-exp"
+PLUGIN_DIR="$HOME/.claude/plugins/installed/cc-use-exp@cc-use-exp"
 
-if [ -d "$INSTALL_DIR" ]; then
-  echo "⚠️  检测到已安装"
+if [ -d "$PLUGIN_DIR" ]; then
+  echo "✅ 检测到通过 Plugin Marketplace 安装"
   echo ""
-  echo "安装位置: $INSTALL_DIR"
+  echo "安装位置: $PLUGIN_DIR"
   echo ""
-  cd "$INSTALL_DIR"
+  echo "📝 说明："
+  echo "- Plugin Marketplace 安装会自动同步 skills 和 commands"
+  echo "- 如需完整配置（rules、templates 等），请继续执行同步"
+  echo ""
+  echo "是否执行完整同步？"
+  INSTALL_DIR="$PLUGIN_DIR"
+elif [ -d "$EXTERNAL_DIR" ]; then
+  echo "✅ 检测到通过 external 方式安装"
+  echo ""
+  echo "安装位置: $EXTERNAL_DIR"
+  echo ""
+  cd "$EXTERNAL_DIR"
   echo "当前版本:"
   git log -1 --pretty=format:"%h - %s (%ar)" 2>/dev/null || echo "无法获取版本信息"
   echo ""
   echo ""
   echo "是否更新到最新版本？"
+  INSTALL_DIR="$EXTERNAL_DIR"
 fi
 ```
 
-如果已安装，询问用户是否更新：
-- 是 → 执行更新流程（git pull + 重新同步）
-- 否 → 退出
+如果已安装，询问用户：
+- Plugin Marketplace 安装 → 询问是否执行完整同步
+- External 安装 → 询问是否更新
+- 用户回答"是" → 继续执行
+- 用户回答"否" → 退出
 
-### 第 2 步：Clone 仓库
+### 第 2 步：Clone 仓库（仅全新安装）
+
+**仅在未检测到任何安装时执行此步骤。**
 
 ```bash
 echo "📦 开始安装 cc-use-exp..."
 echo ""
 
 # 创建外部扩展目录
+INSTALL_DIR="$HOME/.claude/external/cc-use-exp"
 mkdir -p "$HOME/.claude/external"
 
 # Clone 仓库
