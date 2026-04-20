@@ -283,6 +283,57 @@ if exist "%SCRIPT_DIR%\.codex" (
 )
 
 echo.
+REM --- GitHub Copilot ---
+if exist "%SCRIPT_DIR%\.github" (
+    echo [GitHub Copilot] 开始同步
+
+    if not exist "%HOME_DIR%\.github" mkdir "%HOME_DIR%\.github"
+    if not exist "%HOME_DIR%\.github\instructions" mkdir "%HOME_DIR%\.github\instructions"
+
+    set "COPILOT_INSTRUCTIONS_SRC=%SCRIPT_DIR%\.github\instructions"
+    set "COPILOT_INSTRUCTIONS_DST=%HOME_DIR%\.github\instructions"
+    set "COPILOT_COPILOT_FILE_SRC=%SCRIPT_DIR%\.github\copilot-instructions.md"
+    set "COPILOT_COPILOT_FILE_DST=%HOME_DIR%\.github\copilot-instructions.md"
+    set "COPILOT_AGENTS_SRC=%SCRIPT_DIR%\AGENTS.md"
+    set "COPILOT_AGENTS_DST=%HOME_DIR%\.github\AGENTS.md"
+    set "COPILOT_MANIFEST=%HOME_DIR%\.github\instructions\.cc-use-exp-managed"
+    set "COPILOT_INSTRUCTIONS_SYNCED=0"
+
+    if exist "!COPILOT_MANIFEST!" (
+        for /f "usebackq delims=" %%f in ("!COPILOT_MANIFEST!") do (
+            if exist "%HOME_DIR%\.github\instructions\%%f" del /f /q "%HOME_DIR%\.github\instructions\%%f"
+        )
+        del /f /q "!COPILOT_MANIFEST!" >nul 2>nul
+    )
+
+    if exist "!COPILOT_INSTRUCTIONS_SRC!" (
+        for /f "delims=" %%f in ('dir /b /a-d "!COPILOT_INSTRUCTIONS_SRC!\*.md" 2^>nul') do (
+            copy /y "!COPILOT_INSTRUCTIONS_SRC!\%%f" "%HOME_DIR%\.github\instructions\%%f" >nul
+            >> "!COPILOT_MANIFEST!" echo %%f
+            set /a COPILOT_INSTRUCTIONS_SYNCED+=1
+        )
+    )
+
+    if exist "!COPILOT_COPILOT_FILE_SRC!" (
+        copy /y "!COPILOT_COPILOT_FILE_SRC!" "!COPILOT_COPILOT_FILE_DST!" >nul
+        echo   [√] copilot-instructions.md
+    ) else (
+        echo   未找到 .github\copilot-instructions.md，跳过
+    )
+
+    if exist "!COPILOT_AGENTS_SRC!" (
+        copy /y "!COPILOT_AGENTS_SRC!" "!COPILOT_AGENTS_DST!" >nul
+        echo   [√] AGENTS.md
+    ) else (
+        echo   未找到仓库根 AGENTS.md，跳过 AGENTS 同步
+    )
+
+    echo   [√] instructions: !COPILOT_INSTRUCTIONS_SYNCED! 个，同步到 ~/.github/instructions/
+) else (
+    echo [GitHub Copilot] 源目录不存在，跳过
+)
+
+echo.
 REM --- Cursor ---
 if exist "%SCRIPT_DIR%\.cursor" (
     echo [Cursor] 开始同步

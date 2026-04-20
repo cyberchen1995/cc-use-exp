@@ -5,8 +5,9 @@ fi
 
 set -euo pipefail
 
-# 同步 .claude、.gemini、.codex 和 .cursor 配置到用户根目录
+# 同步 .claude、.gemini、.codex、.cursor 和 .github Copilot 配置到用户根目录
 # 说明：Cursor 的 rules 同步为兼容性补充；项目内 .cursor/rules 仍是主路径。
+# 说明：GitHub Copilot 重点同步仓库级 instructions 与 copilot-instructions.md，兼容 coding agent 场景。
 
 # 颜色输出
 RED='\033[0;31m'
@@ -461,6 +462,46 @@ if [[ -d "${SCRIPT_DIR}/.codex" ]]; then
     print_line "${YELLOW}  已保留 ~/.codex 运行态文件（auth/history/logs/cache）${NC}"
 else
     print_line "${YELLOW}[Codex] 源目录不存在，跳过${NC}"
+fi
+
+printf '\n'
+
+# --- GitHub Copilot ---
+if [[ -d "${SCRIPT_DIR}/.github" ]]; then
+    print_line "${GREEN}[GitHub Copilot] 开始同步${NC}"
+
+    mkdir -p ~/.github ~/.github/instructions
+
+    COPILOT_INSTRUCTIONS_SYNCED=0
+    COPILOT_INSTRUCTIONS_SRC="${SCRIPT_DIR}/.github/instructions"
+    COPILOT_INSTRUCTIONS_DST="${HOME}/.github/instructions"
+    COPILOT_COPILOT_FILE_SRC="${SCRIPT_DIR}/.github/copilot-instructions.md"
+    COPILOT_COPILOT_FILE_DST="${HOME}/.github/copilot-instructions.md"
+    COPILOT_AGENTS_SRC="${SCRIPT_DIR}/AGENTS.md"
+    COPILOT_AGENTS_DST="${HOME}/.github/AGENTS.md"
+
+    if [[ -d "$COPILOT_INSTRUCTIONS_SRC" ]]; then
+        sync_managed_instruction_files "$COPILOT_INSTRUCTIONS_SRC" "$COPILOT_INSTRUCTIONS_DST"
+        COPILOT_INSTRUCTIONS_SYNCED=$CODEX_INSTRUCTIONS_SYNCED
+    fi
+
+    if [[ -f "$COPILOT_COPILOT_FILE_SRC" ]]; then
+        cp "$COPILOT_COPILOT_FILE_SRC" "$COPILOT_COPILOT_FILE_DST"
+        print_line "${GREEN}  ✓ copilot-instructions.md${NC}"
+    else
+        print_line "${YELLOW}  未找到 .github/copilot-instructions.md，跳过${NC}"
+    fi
+
+    if [[ -f "$COPILOT_AGENTS_SRC" ]]; then
+        cp "$COPILOT_AGENTS_SRC" "$COPILOT_AGENTS_DST"
+        print_line "${GREEN}  ✓ AGENTS.md${NC}"
+    else
+        print_line "${YELLOW}  未找到仓库根 AGENTS.md，跳过 AGENTS 同步${NC}"
+    fi
+
+    print_line "${GREEN}  ✓ instructions: ${COPILOT_INSTRUCTIONS_SYNCED} 个，同步到 ~/.github/instructions/${NC}"
+else
+    print_line "${YELLOW}[GitHub Copilot] 源目录不存在，跳过${NC}"
 fi
 
 printf '\n'
