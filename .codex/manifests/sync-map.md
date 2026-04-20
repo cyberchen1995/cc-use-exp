@@ -15,6 +15,7 @@
 - `.codex/templates/`
 - `.codex/tasks/`
 - `.codex/manifests/`
+- `.codex/.env`（仅作为可选代理模板，避免自动覆盖用户本地 `~/.codex/.env`）
 
 ## 明确禁止
 
