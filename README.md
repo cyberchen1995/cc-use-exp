@@ -42,6 +42,20 @@
 
 本项目的重点不是继续堆更长的提示词，而是把长期会反复出现的协作约定拆成可维护的结构：全局原则、审批规则、语言技能和任务 workflow 各司其职。
 
+## 常见协作失效模式
+
+一些高频问题并不是业务逻辑复杂，而是前后端接口契约已经漂移，却被临时兼容掩盖了。例如：
+
+- 列表接口返回数组，前端却按分页对象读取
+- 筛选项接口返回空数组，但列表里的真实数据明明存在对应状态
+- 列表修好了，详情接口或状态选项接口仍然沿用另一套返回格式
+
+这类问题的根因通常不是“前端容错不够”，而是后端没有遵守项目统一成功响应格式，或列表、详情、选项接口各自返回了不同结构。为减少这类问题在不同项目里反复出现，建议把治理拆成三层：
+
+- 全局原则：联调异常先核对接口契约，不默认以前端兼容掩盖后端失配
+- 专项 skill：通过 `cc-api-contract-safety` 检查成功响应包装、分页结构、筛选项来源和临时兼容退出条件
+- workflow 持久化：在任务模板中记录接口契约确认和兼容清理条件，避免“先兼容，后遗忘”
+
 ---
 
 ## 快速部署
@@ -296,7 +310,7 @@ tools\sync-config.bat
 操作相关文件时自动加载对应的开发规范：
 
 - **语言技能**：`go-dev`、`java-dev`、`frontend-dev`、`python-dev`
-- **安全技能**：`ops-safety`、`redis-safety`、`api-design-safety`、`storage-url-safety`
+- **安全技能**：`ops-safety`、`redis-safety`、`api-design-safety`、`api-contract-safety`、`storage-url-safety`
 - **重构技能**：`refactor-safety`、`field-mapping-safety`
 - **工具技能**：`bash-style`、`size-check`
 
@@ -365,7 +379,7 @@ GEMINI.md 自动加载，提供以下保护：
 
 - **前端技能**：`frontend-safety`（数据绑定保护、布局一致性）
 - **语言技能**：`go-dev`、`java-dev`、`python-dev`
-- **安全技能**：`ops-safety`、`api-design-safety`、`storage-url-safety`
+- **安全技能**：`ops-safety`、`api-design-safety`、`api-contract-safety`、`storage-url-safety`
 - **工具技能**：`bash-style`
 
 ### 中费力（显式调用）- Commands
@@ -426,7 +440,7 @@ bash <(curl -sL https://raw.githubusercontent.com/doccker/cc-use-exp/main/tools/
 操作相关文件时自动加载对应的开发规范：
 
 - **语言技能**：`go-dev`、`java-dev`、`frontend-dev`、`python-dev`
-- **安全技能**：`ops-safety`、`redis-safety`、`api-design-safety`、`storage-url-safety`
+- **安全技能**：`ops-safety`、`redis-safety`、`api-design-safety`、`api-contract-safety`、`storage-url-safety`
 - **重构技能**：`refactor-safety`、`field-mapping-safety`
 - **工具技能**：`bash-style`、`size-check`
 
@@ -442,6 +456,29 @@ bash <(curl -sL https://raw.githubusercontent.com/doccker/cc-use-exp/main/tools/
 
 使用 `codex -p cc-custom-instructions`
 ![Chrome 插件独立配置界面（可指定自定义模型）](./pic/codex-unlock.png)
+
+### 大陆网络下 `gpt-5.4` 频繁 `reconnecting`
+
+如果你在大陆网络环境下使用 Codex，并且在 `gpt-5.4` 会话里频繁看到 `reconnecting`，可以先尝试为 Codex 增加代理环境变量。
+
+仓库已提供可直接参考的模板文件：[`.codex/.env`](./.codex/.env)
+
+```env
+HTTP_PROXY="http://127.0.0.1:7897"
+HTTPS_PROXY="http://127.0.0.1:7897"
+NO_PROXY="localhost,127.0.0.1"
+```
+
+使用方式：
+
+- 按你的本地代理实际端口修改 `127.0.0.1:7897`
+- 复制到 `~/.codex/.env`，让其他项目也能复用这份全局配置
+- 如果你只想对单个项目生效，也可以放到该项目的 `.codex/.env`
+
+> **说明**：
+> - 这份 `.env` 是模板，不会被 `tools/sync-config.sh` 自动同步到 `~/.codex/.env`
+> - 这样做是为了避免覆盖用户已有的机器本地代理配置
+> - 该方案来自实际使用验证，适合先作为网络层排查手段
 
 
 ---
@@ -473,7 +510,7 @@ bash <(curl -sL https://raw.githubusercontent.com/doccker/cc-use-exp/main/tools/
 Cursor Agent 根据 `description` 语义匹配，自动加载对应技能：
 
 - **语言技能**：`go-dev`、`java-dev`、`frontend-dev`、`python-dev`
-- **安全技能**：`ops-safety`、`redis-safety`、`api-design-safety`、`storage-url-safety`
+- **安全技能**：`ops-safety`、`redis-safety`、`api-design-safety`、`api-contract-safety`、`storage-url-safety`
 - **重构技能**：`refactor-safety`、`field-mapping-safety`
 - **工具技能**：`bash-style`、`size-check`、`ruanzhu`、`ui-ux-pro-max`
 

@@ -1,0 +1,6 @@
+interface:
+  display_name: "cc-api-contract-safety"
+  short_description: "前后端接口契约安全：响应包装、分页结构、筛选项和兼容退出条件。"
+  default_prompt: "Use $cc-api-contract-safety when API work or joint debugging involves response envelopes, pagination shapes, filter-option payloads, enum values, or temporary compatibility branches. First inspect the real request and response contract plus the project's success wrapper, then prefer fixing backend contract drift before keeping frontend compatibility. If a compatibility branch remains, record the cleanup condition."
+policy:
+  allow_implicit_invocation: true

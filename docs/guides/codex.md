@@ -1,22 +1,24 @@
 ### 7.3 网络与代理配置（国内用户必看）
 
-如果在使用过程中遇到 `gemini-3.1-pro-preview` 等大模型连接超时，或 npx 安装/执行 MCP 扩展极度卡顿，这通常是网络原因导致。
+如果在使用过程中遇到 `gpt-5.4` 会话频繁 `reconnecting`、连接超时，或安装/执行扩展明显卡顿，这通常是网络原因导致。
 
-本项目提供了一份防污染的代理配置模板 `.gemini/.env.example`。
+本项目提供了一份可直接参考的代理配置模板 `.codex/.env`。
 
 **使用方法**：
-1. 复制模板并重命名为 `.env`：
+1. 打开项目内模板文件：
    ```bash
-   cp .gemini/.env.example .gemini/.env
+   cat .codex/.env
    ```
-2. 修改 `.env` 文件，填入你本地科学上网客户端（如 Clash Verge）的代理端口：
+2. 按你本地代理客户端（如 Clash Verge）的实际端口修改文件内容：
    ```env
-   HTTP_PROXY=http://127.0.0.1:你的端口
-   HTTPS_PROXY=http://127.0.0.1:你的端口
-   # 默认已配置 NO_PROXY 排除 localhost 和 .npmmirror.com 以实现直连加速
-   NO_PROXY=localhost,127.0.0.1,.npmmirror.com
+   HTTP_PROXY="http://127.0.0.1:你的端口"
+   HTTPS_PROXY="http://127.0.0.1:你的端口"
+   NO_PROXY="localhost,127.0.0.1"
    ```
-   *(注：`.gemini/.env` 已被加入 `.gitignore`，不会泄露你的个人网络环境)*
+3. 选择生效范围：
+   - 复制到 `~/.codex/.env`：让其他项目也复用这份全局代理配置
+   - 保留在当前项目的 `.codex/.env`：只对当前项目生效
+4. 注意同步边界：`tools/sync-config.sh` 不会自动把该文件同步到 `~/.codex/.env`，避免覆盖你本机已有代理配置。
 
 ---
 
@@ -286,6 +288,7 @@ codex -p cc-custom-instructions
 
 ```text
 .codex/
+├── .env
 ├── global/
 │   ├── AGENTS.md
 │   └── rules/
@@ -294,3 +297,9 @@ codex -p cc-custom-instructions
 ├── instructions/
 │   ├── README.md
 │   └── custom.md
+├── manifests/
+├── profiles/
+├── skills/
+├── tasks/
+└── templates/
+```
