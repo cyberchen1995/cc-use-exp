@@ -24,3 +24,5 @@ publish.sh
 
 # Cursor runtime files
 .cursor/mcp.json
+
+.codex/tasks/
