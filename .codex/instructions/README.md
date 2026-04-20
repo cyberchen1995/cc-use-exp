@@ -7,3 +7,4 @@
 - profile 内统一使用相对路径引用，例如 `./instructions/custom.md`。
 - 通过 `tools/sync-config.sh` 或 `tools\sync-config.bat` 同步后，用户级落点为 `~/.codex/instructions/`。
 - 不写入项目私有绝对路径。
+- 如说明文件涉及作者署名或代码生成约定，需与项目规则保持一致：文档和代码署名统一使用 `wwj`，Java 文件头作者注释统一使用 `@author wwj`。
