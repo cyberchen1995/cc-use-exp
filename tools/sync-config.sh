@@ -74,8 +74,10 @@ build_profiles_bundle() {
     local src_dir="$1"
     local profile_file
     local profile_list
+    local profile_name
 
     CODEX_PROFILE_BUNDLE="$(mktemp)"
+    CODEX_PROFILE_NAMES="$(mktemp)"
     CODEX_PROFILES_SYNCED=0
     profile_list="$(mktemp)"
 
@@ -86,6 +88,10 @@ build_profiles_bundle() {
 
     while IFS= read -r profile_file; do
         [[ -n "$profile_file" ]] || continue
+        profile_name="$(sed -nE 's/^\[profiles\."([^"]+)"\][[:space:]]*$/\1/p; s/^\[profiles\.([A-Za-z0-9_-]+)\][[:space:]]*$/\1/p' "$profile_file" | head -n 1)"
+        if [[ -n "$profile_name" ]]; then
+            printf '%s\n' "$profile_name" >> "$CODEX_PROFILE_NAMES"
+        fi
         CODEX_PROFILES_SYNCED=$((CODEX_PROFILES_SYNCED + 1))
         cat "$profile_file" >> "$CODEX_PROFILE_BUNDLE"
         if [[ -s "$profile_file" && -n "$(tail -c 1 "$profile_file" 2>/dev/null)" ]]; then
@@ -95,6 +101,75 @@ build_profiles_bundle() {
     done < "$profile_list"
 
     rm -f "$profile_list"
+}
+
+remove_conflicting_profile_tables() {
+    local config_file="$1"
+    local names_file="$2"
+    local tmp_file
+
+    [[ -f "$config_file" && -s "$names_file" ]] || return 0
+
+    tmp_file="$(mktemp)"
+
+    awk -v names_file="$names_file" '
+        BEGIN {
+            while ((getline profile_name < names_file) > 0) {
+                managed_profiles[profile_name] = 1
+            }
+        }
+
+        function codex_profile_name(line, profile_name) {
+            profile_name = line
+            if (profile_name ~ /^\[profiles\."[^"]+"\][[:space:]]*$/) {
+                sub(/^\[profiles\."/, "", profile_name)
+                sub(/"\][[:space:]]*$/, "", profile_name)
+                return profile_name
+            }
+            if (profile_name ~ /^\[profiles\.[A-Za-z0-9_-]+\][[:space:]]*$/) {
+                sub(/^\[profiles\./, "", profile_name)
+                sub(/\][[:space:]]*$/, "", profile_name)
+                return profile_name
+            }
+            return ""
+        }
+
+        /^\[/ {
+            current_profile = codex_profile_name($0)
+            skip_table = current_profile != "" && current_profile in managed_profiles
+        }
+
+        !skip_table { print }
+    ' "$config_file" > "$tmp_file"
+
+    if cmp -s "$config_file" "$tmp_file"; then
+        rm -f "$tmp_file"
+        return 0
+    fi
+
+    cp "$config_file" "${config_file}.cc-use-exp.bak"
+    mv "$tmp_file" "$config_file"
+    print_line "${YELLOW}  已移除 ~/.codex/config.toml 中同名旧 profile，并备份到 config.toml.cc-use-exp.bak${NC}"
+}
+
+validate_toml_file() {
+    local toml_file="$1"
+
+    if ! command -v python3 &>/dev/null; then
+        return 0
+    fi
+
+    python3 - "$toml_file" <<'PY'
+import sys
+
+try:
+    import tomllib
+except ModuleNotFoundError:
+    sys.exit(0)
+
+with open(sys.argv[1], "rb") as toml_file:
+    tomllib.load(toml_file)
+PY
 }
 
 sync_managed_rules() {
@@ -536,8 +611,10 @@ sync_codex() {
 
     if [[ -d "$CODEX_PROFILES_SRC" ]]; then
         build_profiles_bundle "$CODEX_PROFILES_SRC"
+        remove_conflicting_profile_tables "$CODEX_CONFIG_DST" "$CODEX_PROFILE_NAMES"
         merge_managed_block "$CODEX_PROFILE_BUNDLE" "$CODEX_CONFIG_DST" "$CODEX_PROFILE_START" "$CODEX_PROFILE_END"
-        rm -f "$CODEX_PROFILE_BUNDLE"
+        validate_toml_file "$CODEX_CONFIG_DST"
+        rm -f "$CODEX_PROFILE_BUNDLE" "$CODEX_PROFILE_NAMES"
         print_line "${GREEN}  ✓ profiles: ${CODEX_PROFILES_SYNCED} 个，已合并到 ~/.codex/config.toml${NC}"
     else
         print_line "${YELLOW}  未找到 profiles/，跳过 profile 同步${NC}"

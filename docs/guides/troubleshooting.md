@@ -276,7 +276,7 @@ codex -p cc-balanced
 **解决方案**：
 ```bash
 # 1. 检查 config.toml
-cat ~/.codex/config.toml | grep -A 10 "\[profiles.cc-balanced\]"
+cat ~/.codex/config.toml | grep -A 10 "\[profiles\.\"cc-balanced\"\]"
 
 # 2. 重新同步
 cd /path/to/cc-use-exp
