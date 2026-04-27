@@ -1,0 +1,120 @@
+<svg width="1000" height="720" viewBox="0 0 1000 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="cp-bg" x1="0" y1="0" x2="1000" y2="720" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1F1B2E" />
+      <stop offset="1" stop-color="#0E0B18" />
+    </linearGradient>
+    <linearGradient id="cp-accent" x1="0" y1="0" x2="1000" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#6E40C9" />
+      <stop offset="1" stop-color="#A371F7" />
+    </linearGradient>
+    <radialGradient id="cp-glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(500 360) rotate(0) scale(420 200)">
+      <stop offset="0" stop-color="#6E40C9" stop-opacity="0.18" />
+      <stop offset="1" stop-color="#6E40C9" stop-opacity="0" />
+    </radialGradient>
+    <filter id="cp-shadow" x="-20" y="-20" width="1040" height="760">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000" flood-opacity="0.4" />
+    </filter>
+    <style>
+      .cp-title { font: bold 26px "Trebuchet MS", sans-serif; fill: #C7A8FF; }
+      .cp-sub { font: 13px "Trebuchet MS", sans-serif; fill: #8E83A8; }
+      .cp-h { font: bold 14px "Trebuchet MS", sans-serif; fill: #C7A8FF; letter-spacing: 1px; }
+      .cp-text { font: 12px "SF Mono", "Consolas", monospace; fill: #DED5F2; }
+      .cp-mute { font: 11px "SF Mono", "Consolas", monospace; fill: #76698F; }
+      .cp-emph { font: bold 12px "SF Mono", monospace; fill: #B388FF; }
+      .cp-tag { font: bold 10px "Trebuchet MS", sans-serif; fill: #FFFFFF; letter-spacing: 0.5px; }
+      .cp-step { font: bold 18px "Trebuchet MS", sans-serif; fill: #FFFFFF; }
+    </style>
+  </defs>
+
+  <rect width="1000" height="720" fill="url(#cp-bg)" />
+  <rect width="1000" height="720" fill="url(#cp-glow)" />
+
+  <text x="500" y="44" class="cp-title" text-anchor="middle">GitHub Copilot · 加载机制 + cc-use-exp 介入链路</text>
+  <text x="500" y="66" class="cp-sub" text-anchor="middle">官方文档：docs.github.com/copilot · copilot-instructions.md + AGENTS.md（nearest 优先）+ Path-specific instructions</text>
+
+  <!-- ① 用户输入 -->
+  <rect x="40" y="90" width="920" height="78" rx="10" fill="#252040" stroke="#3D3360" stroke-width="1.5" filter="url(#cp-shadow)" />
+  <circle cx="68" cy="129" r="14" fill="url(#cp-accent)" />
+  <text x="68" y="134" class="cp-step" text-anchor="middle">1</text>
+  <text x="100" y="118" class="cp-h">USER INPUT · VS Code Chat / Copilot CLI / Cloud Agent</text>
+  <rect x="100" y="128" width="820" height="30" rx="5" fill="#13101F" stroke="#2A2545" />
+  <text x="114" y="148" class="cp-text">@workspace</text>
+  <text x="200" y="148" class="cp-emph">›</text>
+  <text x="214" y="148" class="cp-text">为 PaymentController 增加幂等校验，并补充单元测试</text>
+
+  <!-- ② 加载链路 主区域 -->
+  <rect x="40" y="186" width="600" height="430" rx="10" fill="#252040" stroke="#3D3360" stroke-width="1.5" filter="url(#cp-shadow)" />
+  <circle cx="68" cy="216" r="14" fill="url(#cp-accent)" />
+  <text x="68" y="221" class="cp-step" text-anchor="middle">2</text>
+  <text x="100" y="220" class="cp-h">LOADING PIPELINE · 三类自动注入</text>
+
+  <!-- 启动加载 -->
+  <rect x="60" y="240" width="560" height="92" rx="6" fill="#1F1A38" stroke="#5A4A8E" />
+  <rect x="60" y="240" width="80" height="22" rx="4" fill="url(#cp-accent)" />
+  <text x="100" y="256" class="cp-tag" text-anchor="middle">仓库级 · 常驻</text>
+  <text x="148" y="256" class="cp-text" font-weight="bold">copilot-instructions.md（保存即生效）</text>
+  <text x="74" y="278" class="cp-mute">▸ .github/copilot-instructions.md（提交到仓库，团队共享）</text>
+  <text x="74" y="296" class="cp-mute">▸ 优先级：Personal &gt; Repository &gt; Organization</text>
+  <text x="74" y="314" class="cp-emph">★ cc-use-exp 写入：工作方式 / 质量要求 / 协作 / 分层（中文回复）</text>
+
+  <!-- 触发加载 -->
+  <rect x="60" y="342" width="560" height="92" rx="6" fill="#1F1A38" stroke="#5A4A8E" />
+  <rect x="60" y="342" width="80" height="22" rx="4" fill="url(#cp-accent)" />
+  <text x="100" y="358" class="cp-tag" text-anchor="middle">路径 · 匹配</text>
+  <text x="148" y="358" class="cp-text" font-weight="bold">Path-specific instructions（applyTo 字段匹配）</text>
+  <text x="74" y="380" class="cp-mute">▸ .github/instructions/*.instructions.md（按 applyTo glob 匹配文件）</text>
+  <text x="74" y="398" class="cp-mute">▸ 适用于 Copilot Chat (VS Code / Visual Studio) + Cloud Agent</text>
+  <text x="74" y="416" class="cp-emph">★ 命中 java.instructions.md（Java 文件触发额外规范注入）</text>
+
+  <!-- 显式调用 -->
+  <rect x="60" y="444" width="560" height="92" rx="6" fill="#1F1A38" stroke="#5A4A8E" />
+  <rect x="60" y="444" width="80" height="22" rx="4" fill="url(#cp-accent)" />
+  <text x="100" y="460" class="cp-tag" text-anchor="middle">Agent · 兜底</text>
+  <text x="148" y="460" class="cp-text" font-weight="bold">AGENTS.md（nearest in tree 优先）</text>
+  <text x="74" y="482" class="cp-mute">▸ Coding Agent 优先读 AGENTS.md（root 与 copilot-instructions.md 共存）</text>
+  <text x="74" y="500" class="cp-emph">★ 仓库 AGENTS.md 兜底配置（与 Codex 共享同一份内容）</text>
+  <text x="74" y="518" class="cp-mute">▸ Copilot CLI 还支持 ~/.copilot/copilot-instructions.md 个人级</text>
+
+  <path d="M 340 538 L 340 580 L 340 590 L 336 584 M 340 590 L 344 584" stroke="#6E40C9" stroke-width="2" fill="none" />
+  <text x="350" y="566" class="cp-mute">合并 prompt（仓库 + 路径匹配 + Agent 兜底 + 用户输入）</text>
+
+  <!-- ② 右侧侧栏 -->
+  <rect x="660" y="186" width="300" height="430" rx="10" fill="#1A1530" stroke="#3D3360" stroke-width="1.5" filter="url(#cp-shadow)" />
+  <text x="810" y="212" class="cp-h" text-anchor="middle">本项目实际生效</text>
+  <text x="810" y="230" class="cp-sub" text-anchor="middle">cc-use-exp 提供的内容</text>
+
+  <line x1="678" y1="244" x2="942" y2="244" stroke="#3D3360" />
+  <text x="678" y="266" class="cp-emph">仓库级常驻</text>
+  <text x="678" y="284" class="cp-mute">.github/copilot-instructions.md</text>
+  <text x="678" y="300" class="cp-mute">中文回复 · wwj 署名</text>
+  <text x="678" y="316" class="cp-mute">最小改动 · 复用现有模式</text>
+
+  <text x="678" y="346" class="cp-emph">Path-specific（3 个）</text>
+  <text x="678" y="364" class="cp-mute">general.instructions.md</text>
+  <text x="678" y="380" class="cp-mute">frontend.instructions.md</text>
+  <text x="678" y="396" class="cp-mute">java.instructions.md</text>
+
+  <text x="678" y="426" class="cp-emph">AGENTS.md 兜底</text>
+  <text x="678" y="444" class="cp-mute">仓库根目录可选维护</text>
+  <text x="678" y="460" class="cp-mute">同步到 ~/.github/AGENTS.md</text>
+
+  <text x="678" y="490" class="cp-emph">分层引用</text>
+  <text x="678" y="508" class="cp-mute">语言规范 → 复用 .codex/skills/</text>
+  <text x="678" y="524" class="cp-mute">       → 复用 .claude/skills/</text>
+  <text x="678" y="540" class="cp-mute">       → 复用 .cursor/skills/</text>
+
+  <text x="678" y="570" class="cp-emph">部署来源</text>
+  <text x="678" y="588" class="cp-mute">install-copilot.sh 一键安装</text>
+  <text x="678" y="604" class="cp-mute">同步到 ~/.github/ + 仓库内</text>
+
+  <!-- ③ 模型调用与结果 -->
+  <rect x="40" y="630" width="920" height="74" rx="10" fill="#252040" stroke="#3D3360" stroke-width="1.5" filter="url(#cp-shadow)" />
+  <circle cx="68" cy="667" r="14" fill="url(#cp-accent)" />
+  <text x="68" y="672" class="cp-step" text-anchor="middle">3</text>
+  <text x="100" y="660" class="cp-h">MODEL CALL · 输出</text>
+  <text x="100" y="680" class="cp-text">Copilot（GPT-5 / Claude Sonnet 4.6 / Gemini 3，按订阅切换）</text>
+  <text x="500" y="680" class="cp-emph">→</text>
+  <text x="518" y="680" class="cp-text">遵循 java.instructions.md，输出幂等表 + 单元测试 PR</text>
+  <text x="100" y="696" class="cp-mute">Chat 面板顶部显示已引用的 instructions 文件，可点击查看</text>
+</svg>

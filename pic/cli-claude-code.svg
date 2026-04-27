@@ -1,0 +1,122 @@
+<svg width="1000" height="720" viewBox="0 0 1000 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="cc-bg" x1="0" y1="0" x2="1000" y2="720" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1A1410" />
+      <stop offset="1" stop-color="#0A0604" />
+    </linearGradient>
+    <linearGradient id="cc-accent" x1="0" y1="0" x2="1000" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#D97757" />
+      <stop offset="1" stop-color="#F4A56F" />
+    </linearGradient>
+    <radialGradient id="cc-glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(500 360) rotate(0) scale(420 200)">
+      <stop offset="0" stop-color="#D97757" stop-opacity="0.18" />
+      <stop offset="1" stop-color="#D97757" stop-opacity="0" />
+    </radialGradient>
+    <filter id="cc-shadow" x="-20" y="-20" width="1040" height="760">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000" flood-opacity="0.3" />
+    </filter>
+    <style>
+      .cc-title { font: bold 26px "Trebuchet MS", sans-serif; fill: #F4A56F; }
+      .cc-sub { font: 13px "Trebuchet MS", sans-serif; fill: #B8A89C; }
+      .cc-h { font: bold 14px "Trebuchet MS", sans-serif; fill: #F4A56F; letter-spacing: 1px; }
+      .cc-text { font: 12px "SF Mono", "Consolas", monospace; fill: #E8DDD3; }
+      .cc-mute { font: 11px "SF Mono", "Consolas", monospace; fill: #8A7B6E; }
+      .cc-emph { font: bold 12px "SF Mono", monospace; fill: #FFB084; }
+      .cc-tag { font: bold 10px "Trebuchet MS", sans-serif; fill: #1A1410; letter-spacing: 0.5px; }
+      .cc-step { font: bold 18px "Trebuchet MS", sans-serif; fill: #1A1410; }
+    </style>
+  </defs>
+
+  <rect width="1000" height="720" fill="url(#cc-bg)" />
+  <rect width="1000" height="720" fill="url(#cc-glow)" />
+
+  <!-- Title -->
+  <text x="500" y="44" class="cc-title" text-anchor="middle">Claude Code · 加载机制 + cc-use-exp 介入链路</text>
+  <text x="500" y="66" class="cc-sub" text-anchor="middle">官方文档：code.claude.com/docs · CLAUDE.md + settings.json + Hooks + Skills + Commands</text>
+
+  <!-- ① 用户输入 -->
+  <rect x="40" y="90" width="920" height="78" rx="10" fill="#1F1812" stroke="#3A2418" stroke-width="1.5" filter="url(#cc-shadow)" />
+  <circle cx="68" cy="129" r="14" fill="url(#cc-accent)" />
+  <text x="68" y="134" class="cc-step" text-anchor="middle">1</text>
+  <text x="100" y="118" class="cc-h">USER INPUT · 终端输入</text>
+  <rect x="100" y="128" width="820" height="30" rx="5" fill="#0E0A06" stroke="#2A1E14" />
+  <text x="114" y="148" class="cc-text">$ claude</text>
+  <text x="172" y="148" class="cc-emph">›</text>
+  <text x="186" y="148" class="cc-text">/fix UserService.java 报 NullPointerException</text>
+
+  <!-- ② 加载链路 主区域 -->
+  <rect x="40" y="186" width="600" height="430" rx="10" fill="#1F1812" stroke="#3A2418" stroke-width="1.5" filter="url(#cc-shadow)" />
+  <circle cx="68" cy="216" r="14" fill="url(#cc-accent)" />
+  <text x="68" y="221" class="cc-step" text-anchor="middle">2</text>
+  <text x="100" y="220" class="cc-h">LOADING PIPELINE · 三层加载</text>
+
+  <!-- 启动加载 -->
+  <rect x="60" y="240" width="560" height="92" rx="6" fill="#26190F" stroke="#5A3A20" />
+  <rect x="60" y="240" width="80" height="22" rx="4" fill="url(#cc-accent)" />
+  <text x="100" y="256" class="cc-tag" text-anchor="middle">启动 · 常驻</text>
+  <text x="148" y="256" class="cc-text" font-weight="bold">Settings + Memory（全局 → 项目 → 本地）</text>
+  <text x="74" y="278" class="cc-mute">▸ ~/.claude/settings.json  →  .claude/settings.json  →  .claude/settings.local.json</text>
+  <text x="74" y="296" class="cc-mute">▸ ~/.claude/CLAUDE.md  →  .claude/CLAUDE.md  （hierarchical 拼接）</text>
+  <text x="74" y="314" class="cc-emph">★ ~/.claude/rules/*.md（cc-use-exp 防御/Bash/文档同步规则始终注入）</text>
+
+  <!-- 触发加载 -->
+  <rect x="60" y="342" width="560" height="92" rx="6" fill="#26190F" stroke="#5A3A20" />
+  <rect x="60" y="342" width="80" height="22" rx="4" fill="url(#cc-accent)" />
+  <text x="100" y="358" class="cc-tag" text-anchor="middle">触发 · 按需</text>
+  <text x="148" y="358" class="cc-text" font-weight="bold">Skills 渐进式披露（描述常驻 + 全文按需）</text>
+  <text x="74" y="380" class="cc-mute">▸ 启动时仅注入 SKILL.md frontmatter（name / description）</text>
+  <text x="74" y="398" class="cc-mute">▸ 模型语义匹配 → 加载完整 SKILL.md + 相关脚本/资源</text>
+  <text x="74" y="416" class="cc-emph">★ 命中 java-dev / refactor-safety / api-design-safety</text>
+
+  <!-- 显式调用 -->
+  <rect x="60" y="444" width="560" height="92" rx="6" fill="#26190F" stroke="#5A3A20" />
+  <rect x="60" y="444" width="80" height="22" rx="4" fill="url(#cc-accent)" />
+  <text x="100" y="460" class="cc-tag" text-anchor="middle">显式 · 调用</text>
+  <text x="148" y="460" class="cc-text" font-weight="bold">Commands（/slash 触发 workflow）</text>
+  <text x="74" y="482" class="cc-mute">▸ ~/.claude/commands/*.md  +  .claude/commands/*.md</text>
+  <text x="74" y="500" class="cc-emph">★ /fix → 加载 fix.md workflow（复现 → 假设 → 验证 → 最小修复）</text>
+  <text x="74" y="518" class="cc-mute">▸ Hooks（UserPromptSubmit / PreToolUse / PostToolUse）执行守卫</text>
+
+  <!-- 流向箭头 -->
+  <path d="M 340 538 L 340 580 L 340 590 L 336 584 M 340 590 L 344 584" stroke="#D97757" stroke-width="2" fill="none" />
+  <text x="350" y="566" class="cc-mute">完整 prompt（rules + 选中 skills + command body + 用户输入）</text>
+
+  <!-- ② 右侧侧栏 · 本项目实际配置 -->
+  <rect x="660" y="186" width="300" height="430" rx="10" fill="#1A1108" stroke="#3A2418" stroke-width="1.5" filter="url(#cc-shadow)" />
+  <text x="810" y="212" class="cc-h" text-anchor="middle">本项目实际生效</text>
+  <text x="810" y="230" class="cc-sub" text-anchor="middle">cc-use-exp 提供的内容</text>
+
+  <line x1="678" y1="244" x2="942" y2="244" stroke="#3A2418" />
+  <text x="678" y="266" class="cc-emph">Rules 常驻（5 个）</text>
+  <text x="678" y="284" class="cc-mute">claude-code-defensive.md</text>
+  <text x="678" y="300" class="cc-mute">bash-style.md · doc-sync.md</text>
+  <text x="678" y="316" class="cc-mute">file-size-limit.md · ops-safety.md</text>
+
+  <text x="678" y="346" class="cc-emph">Skills 按需（16 个）</text>
+  <text x="678" y="364" class="cc-mute">go-dev · java-dev · python-dev</text>
+  <text x="678" y="380" class="cc-mute">frontend-dev · refactor-safety</text>
+  <text x="678" y="396" class="cc-mute">redis-safety · ops-safety · …</text>
+
+  <text x="678" y="426" class="cc-emph">Commands 显式（18 个）</text>
+  <text x="678" y="444" class="cc-mute">/fix · /review · /commit-msg</text>
+  <text x="678" y="460" class="cc-mute">/optimize · /design · /requirement</text>
+  <text x="678" y="476" class="cc-mute">/new-feature · /skill-install · …</text>
+
+  <text x="678" y="506" class="cc-emph">Plugins（marketplace）</text>
+  <text x="678" y="524" class="cc-mute">context7 · frontend-design</text>
+  <text x="678" y="540" class="cc-mute">superpowers · code-review</text>
+  <text x="678" y="556" class="cc-mute">gopls/jdtls/pyright/typescript LSP</text>
+
+  <text x="678" y="586" class="cc-emph">部署来源</text>
+  <text x="678" y="604" class="cc-mute">/skill-install ⇢ ./tools/sync-config.sh</text>
+
+  <!-- ③ 模型调用与结果 -->
+  <rect x="40" y="630" width="920" height="74" rx="10" fill="#1F1812" stroke="#3A2418" stroke-width="1.5" filter="url(#cc-shadow)" />
+  <circle cx="68" cy="667" r="14" fill="url(#cc-accent)" />
+  <text x="68" y="672" class="cc-step" text-anchor="middle">3</text>
+  <text x="100" y="660" class="cc-h">MODEL CALL · 输出</text>
+  <text x="100" y="680" class="cc-text">Claude Sonnet 4.6 / Opus 4.x</text>
+  <text x="280" y="680" class="cc-emph">→</text>
+  <text x="298" y="680" class="cc-text">遵循 java-dev + refactor-safety，输出最小修复 diff（Edit 工具）</text>
+  <text x="100" y="696" class="cc-mute">PostToolUse Hook 回调（如格式化、行数检查、文档同步提醒）后落盘</text>
+</svg>

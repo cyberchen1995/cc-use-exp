@@ -307,6 +307,12 @@ tools\sync-config.bat
 
 > 📖 **[完整指南](./docs/guides/claude-code.md)** - Rules、Skills、Commands 详解、最佳实践、常见问题
 
+<div align="center">
+<img src="pic/cli-claude-code.svg" alt="Claude Code 加载机制 + cc-use-exp 介入链路" width="100%" style="max-width: 1000px" />
+</div>
+
+> 上图展示从 `claude` 命令输入到 Sonnet 模型输出的完整链路：① 启动加载 `settings.json` + `CLAUDE.md` + `~/.claude/rules/*.md`（cc-use-exp 防御性规则始终注入），② Skills 渐进式披露（描述常驻、命中后加载完整 SKILL.md），③ `/slash` 命令显式触发 workflow，PostToolUse Hook 守卫落盘。
+
 ---
 
 ## 快速开始
@@ -376,6 +382,12 @@ Claude Code 联动 Chrome 扩展效果图：
 
 > 📖 **[完整指南](./docs/guides/gemini-cli.md)** - 前端场景速查、UI 风格约束、Vue 组件规范、MCP 工具使用
 
+<div align="center">
+<img src="pic/cli-gemini-cli.svg" alt="Gemini CLI 加载机制 + cc-use-exp 介入链路" width="100%" style="max-width: 1000px" />
+</div>
+
+> 上图展示从 `gemini` 命令输入到 Gemini 3 模型输出的完整链路：① `GEMINI.md` 分层拼接（Global → Project → 子目录 JIT），通过 `@import` 注入 cc-use-exp 的 5 个 rules 文件；② Agent Skills（v0.24+）调用 `activate_skill` 工具弹确认后加载完整 SKILL.md；③ TOML Commands（如 `/layout`）和 Extensions（context7、chrome-devtools-mcp）显式介入。
+
 ---
 
 ## 快速开始
@@ -422,6 +434,12 @@ GEMINI.md 自动加载，提供以下保护：
 # Part 3: Codex 配置
 
 > 📖 **[完整指南](./docs/guides/codex.md)** - 渐进式 Skills 配置、Profile 切换、审批规则、最佳实践
+
+<div align="center">
+<img src="pic/cli-codex-cli.svg" alt="Codex CLI 加载机制 + cc-use-exp 介入链路" width="100%" style="max-width: 1000px" />
+</div>
+
+> 上图展示从 `codex -p cc-balanced` 启动到 GPT-5.3-Codex 输出的完整链路：① `AGENTS.md` 链按 root → cwd 顺序合并（max 32 KiB），cc-use-exp 通过受管区块写入 `~/.codex/AGENTS.md` 与 `~/.codex/config.toml`，不动用户 auth/history；② Skills 渐进式披露（初始列表 ≤ 2% 上下文，命中后加载完整 SKILL.md）；③ Workflow Skills 通过 `$` 前缀显式触发，任务持久化到 `.codex/tasks/`。
 
 ---
 
@@ -512,6 +530,12 @@ NO_PROXY="localhost,127.0.0.1"
 
 > 📖 **[完整指南](./docs/guides/cursor.md)** - Rules 配置、Skills 语义匹配、Commands 使用、最佳实践
 
+<div align="center">
+<img src="pic/cli-cursor.svg" alt="Cursor 加载机制 + cc-use-exp 介入链路" width="100%" style="max-width: 1000px" />
+</div>
+
+> 上图展示从 Cursor Chat（⌘L）输入到 Cursor Agent 输出的完整链路：① 优先级 Team → Project → User，cc-use-exp 在 `.cursor/rules/` 提供 6 个 `.mdc` 文件；② `.mdc` Frontmatter 决定加载方式：`alwaysApply` 始终生效（defensive）、`globs` 文件匹配（ops-safety）、`description` 由 Agent 语义匹配；③ Skills 通过 description 自动激活，Commands 通过 `/` 显式触发，仅作用于 Agent / Inline Edit。
+
 ---
 
 ## 快速开始
@@ -548,6 +572,54 @@ Cursor Agent 根据 `description` 语义匹配，自动加载对应技能：
 **中频命令**：`/new-feature`、`/design`、`/requirement`、`/optimize`、`/style-extract`
 
 **低频命令**：`/skill-update`、`/project-init`、`/status`
+
+---
+
+# Part 5: GitHub Copilot 配置
+
+> 📖 **完整指南**：本仓库 `.github/copilot-instructions.md` + `.github/instructions/*.instructions.md` + 仓库根 `AGENTS.md`
+
+<div align="center">
+<img src="pic/cli-copilot.svg" alt="GitHub Copilot 加载机制 + cc-use-exp 介入链路" width="100%" style="max-width: 1000px" />
+</div>
+
+> 上图展示从 VS Code Chat / Copilot CLI / Cloud Agent 输入到 Copilot 模型输出的完整链路：① 仓库级 `.github/copilot-instructions.md` 保存即生效（Personal > Repository > Organization 优先级）；② Path-specific `.github/instructions/*.instructions.md` 按 `applyTo` 字段匹配文件路径自动注入；③ 仓库根 `AGENTS.md` 由 Coding Agent 优先读取，作为兜底配置（可与 copilot-instructions.md 共存）。
+
+---
+
+## 快速开始
+
+### 一键安装
+
+在终端执行：
+```bash
+bash <(curl -sL https://raw.githubusercontent.com/doccker/cc-use-exp/main/tools/install-copilot.sh)
+```
+
+更新配置：重新运行安装脚本
+
+### 零费力（自动生效）- copilot-instructions.md
+
+`.github/copilot-instructions.md` 保存到仓库后立即生效，提供以下保护：
+
+- **工作方式**：先读代码、最小改动、复用现有模式、不主动扩需求
+- **质量要求**：错误行为/类型问题/缺失校验视为真实问题，不通过改测试掩盖错误实现
+- **协作输出**：默认简体中文，作者署名统一为 `wwj`
+- **分层引用**：语言/框架规范优先复用 `.codex/skills/`、`.claude/skills/`、`.cursor/skills/`
+
+### 低费力（路径匹配）- Path-specific instructions
+
+`.github/instructions/*.instructions.md` 按 `applyTo` 字段匹配文件路径自动注入：
+
+- `general.instructions.md`：通用规范
+- `frontend.instructions.md`：前端文件触发（Vue / TS / TSX）
+- `java.instructions.md`：Java 文件触发（Spring Boot 规范）
+
+> 💡 **支持范围**：Copilot Chat（VS Code / Visual Studio）+ Copilot Cloud Agent
+
+### 中费力（兜底）- AGENTS.md
+
+仓库根目录维护的 `AGENTS.md` 由 Copilot Coding Agent 优先读取，与 `copilot-instructions.md` 共存。Copilot CLI 还支持个人级 `~/.copilot/copilot-instructions.md`。
 
 ---
 

@@ -1,0 +1,120 @@
+<svg width="1000" height="720" viewBox="0 0 1000 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="cu-bg" x1="0" y1="0" x2="1000" y2="720" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1B1F33" />
+      <stop offset="1" stop-color="#0A0D1A" />
+    </linearGradient>
+    <linearGradient id="cu-accent" x1="0" y1="0" x2="1000" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3D63DD" />
+      <stop offset="1" stop-color="#5A87F7" />
+    </linearGradient>
+    <radialGradient id="cu-glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(500 360) rotate(0) scale(420 200)">
+      <stop offset="0" stop-color="#3D63DD" stop-opacity="0.18" />
+      <stop offset="1" stop-color="#3D63DD" stop-opacity="0" />
+    </radialGradient>
+    <filter id="cu-shadow" x="-20" y="-20" width="1040" height="760">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000" flood-opacity="0.4" />
+    </filter>
+    <style>
+      .cu-title { font: bold 26px "Trebuchet MS", sans-serif; fill: #B6CCFF; }
+      .cu-sub { font: 13px "Trebuchet MS", sans-serif; fill: #8590B0; }
+      .cu-h { font: bold 14px "Trebuchet MS", sans-serif; fill: #B6CCFF; letter-spacing: 1px; }
+      .cu-text { font: 12px "SF Mono", "Consolas", monospace; fill: #DDE6FF; }
+      .cu-mute { font: 11px "SF Mono", "Consolas", monospace; fill: #6F7B96; }
+      .cu-emph { font: bold 12px "SF Mono", monospace; fill: #8FB3FF; }
+      .cu-tag { font: bold 10px "Trebuchet MS", sans-serif; fill: #FFFFFF; letter-spacing: 0.5px; }
+      .cu-step { font: bold 18px "Trebuchet MS", sans-serif; fill: #FFFFFF; }
+    </style>
+  </defs>
+
+  <rect width="1000" height="720" fill="url(#cu-bg)" />
+  <rect width="1000" height="720" fill="url(#cu-glow)" />
+
+  <text x="500" y="44" class="cu-title" text-anchor="middle">Cursor · 加载机制 + cc-use-exp 介入链路</text>
+  <text x="500" y="66" class="cu-sub" text-anchor="middle">官方文档：docs.cursor.com/context/rules · .mdc Frontmatter（alwaysApply / globs / description）+ Skills 语义匹配</text>
+
+  <!-- ① 用户输入 -->
+  <rect x="40" y="90" width="920" height="78" rx="10" fill="#1F2540" stroke="#2D3450" stroke-width="1.5" filter="url(#cu-shadow)" />
+  <circle cx="68" cy="129" r="14" fill="url(#cu-accent)" />
+  <text x="68" y="134" class="cu-step" text-anchor="middle">1</text>
+  <text x="100" y="118" class="cu-h">USER INPUT · 在 Cursor Chat 输入</text>
+  <rect x="100" y="128" width="820" height="30" rx="5" fill="#0E1124" stroke="#2A3050" />
+  <text x="114" y="148" class="cu-text">⌘L</text>
+  <text x="148" y="148" class="cu-emph">›</text>
+  <text x="162" y="148" class="cu-text">/review @src/api/order.ts 这个新接口</text>
+
+  <!-- ② 加载链路 主区域 -->
+  <rect x="40" y="186" width="600" height="430" rx="10" fill="#1F2540" stroke="#2D3450" stroke-width="1.5" filter="url(#cu-shadow)" />
+  <circle cx="68" cy="216" r="14" fill="url(#cu-accent)" />
+  <text x="68" y="221" class="cu-step" text-anchor="middle">2</text>
+  <text x="100" y="220" class="cu-h">LOADING PIPELINE · 四种激活模式</text>
+
+  <!-- 启动加载 -->
+  <rect x="60" y="240" width="560" height="92" rx="6" fill="#1A2342" stroke="#3D5DA8" />
+  <rect x="60" y="240" width="80" height="22" rx="4" fill="url(#cu-accent)" />
+  <text x="100" y="256" class="cu-tag" text-anchor="middle">启动 · 优先级</text>
+  <text x="148" y="256" class="cu-text" font-weight="bold">Rules 优先级链：Team → Project → User</text>
+  <text x="74" y="278" class="cu-mute">▸ Project Rules：.cursor/rules/*.mdc（仓库内为主路径）</text>
+  <text x="74" y="296" class="cu-mute">▸ User Rules：~/.cursor/rules/（全局兜底，本项目兼容性同步）</text>
+  <text x="74" y="314" class="cu-emph">★ AGENTS.md 作为简单替代，与 .mdc rules 共存</text>
+
+  <!-- 触发加载 -->
+  <rect x="60" y="342" width="560" height="92" rx="6" fill="#1A2342" stroke="#3D5DA8" />
+  <rect x="60" y="342" width="80" height="22" rx="4" fill="url(#cu-accent)" />
+  <text x="100" y="358" class="cu-tag" text-anchor="middle">触发 · 模式</text>
+  <text x="148" y="358" class="cu-text" font-weight="bold">.mdc Frontmatter 决定何时加载</text>
+  <text x="74" y="380" class="cu-mute">▸ alwaysApply: true → 始终注入（defensive.mdc）</text>
+  <text x="74" y="398" class="cu-mute">▸ globs: "**/*.ts,**/*.tsx" → 文件匹配自动附加（ops-safety.mdc）</text>
+  <text x="74" y="416" class="cu-emph">▸ description（Agent Requested）→ Cursor Agent 语义匹配选择</text>
+
+  <!-- 显式调用 -->
+  <rect x="60" y="444" width="560" height="92" rx="6" fill="#1A2342" stroke="#3D5DA8" />
+  <rect x="60" y="444" width="80" height="22" rx="4" fill="url(#cu-accent)" />
+  <text x="100" y="460" class="cu-tag" text-anchor="middle">显式 · 调用</text>
+  <text x="148" y="460" class="cu-text" font-weight="bold">Skills（语义匹配）+ Commands（/ 触发）</text>
+  <text x="74" y="482" class="cu-mute">▸ ~/.cursor/skills/ 描述常驻，Agent 按 description 选中加载</text>
+  <text x="74" y="500" class="cu-emph">★ /review → 加载 review.md 工作流（部署为 SKILL.md 兼容层）</text>
+  <text x="74" y="518" class="cu-mute">▸ @ruleName / @filename 显式注入指定 rule 或文件</text>
+
+  <path d="M 340 538 L 340 580 L 340 590 L 336 584 M 340 590 L 344 584" stroke="#3D63DD" stroke-width="2" fill="none" />
+  <text x="350" y="566" class="cu-mute">合并 prompt（Team + Project + User rules + 选中 skill + command）</text>
+
+  <!-- ② 右侧侧栏 -->
+  <rect x="660" y="186" width="300" height="430" rx="10" fill="#161A2C" stroke="#2D3450" stroke-width="1.5" filter="url(#cu-shadow)" />
+  <text x="810" y="212" class="cu-h" text-anchor="middle">本项目实际生效</text>
+  <text x="810" y="230" class="cu-sub" text-anchor="middle">cc-use-exp 提供的内容</text>
+
+  <line x1="678" y1="244" x2="942" y2="244" stroke="#2D3450" />
+  <text x="678" y="266" class="cu-emph">.cursor/rules/*.mdc（6）</text>
+  <text x="678" y="284" class="cu-mute">defensive.mdc · alwaysApply</text>
+  <text x="678" y="300" class="cu-mute">file-size-limit.mdc · doc-sync.mdc</text>
+  <text x="678" y="316" class="cu-mute">bash-style.mdc · ops-safety.mdc</text>
+
+  <text x="678" y="346" class="cu-emph">Skills（语义匹配，14 个）</text>
+  <text x="678" y="364" class="cu-mute">go-dev · java-dev · python-dev</text>
+  <text x="678" y="380" class="cu-mute">frontend-dev · refactor-safety</text>
+  <text x="678" y="396" class="cu-mute">redis-safety · ui-ux-pro-max · …</text>
+
+  <text x="678" y="426" class="cu-emph">Commands（12 个，/ 触发）</text>
+  <text x="678" y="444" class="cu-mute">/fix · /review · /commit-msg</text>
+  <text x="678" y="460" class="cu-mute">/new-feature · /design · /requirement</text>
+  <text x="678" y="476" class="cu-mute">/optimize · /style-extract · /status</text>
+
+  <text x="678" y="506" class="cu-emph">部署位置</text>
+  <text x="678" y="524" class="cu-mute">.cursor/rules/ → 项目内（主）</text>
+  <text x="678" y="540" class="cu-mute">~/.cursor/rules/ → 兼容兜底</text>
+  <text x="678" y="556" class="cu-mute">~/.cursor/skills/ + templates/</text>
+
+  <text x="678" y="586" class="cu-emph">作用范围</text>
+  <text x="678" y="604" class="cu-mute">仅 Agent / Inline Edit 生效</text>
+
+  <!-- ③ 模型调用与结果 -->
+  <rect x="40" y="630" width="920" height="74" rx="10" fill="#1F2540" stroke="#2D3450" stroke-width="1.5" filter="url(#cu-shadow)" />
+  <circle cx="68" cy="667" r="14" fill="url(#cu-accent)" />
+  <text x="68" y="672" class="cu-step" text-anchor="middle">3</text>
+  <text x="100" y="660" class="cu-h">MODEL CALL · 输出</text>
+  <text x="100" y="680" class="cu-text">Cursor Agent（Claude Sonnet 4.6 / GPT-5.3 / Gemini 3，可切换）</text>
+  <text x="538" y="680" class="cu-emph">→</text>
+  <text x="556" y="680" class="cu-text">遵循 defensive + api-design-safety，给出 review 报告</text>
+  <text x="100" y="696" class="cu-mute">边栏显示已激活的 rules 列表，Inline Edit 直接落盘修改</text>
+</svg>
