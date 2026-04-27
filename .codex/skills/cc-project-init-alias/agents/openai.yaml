@@ -1,0 +1,6 @@
+interface:
+  display_name: "cc-project-init"
+  short_description: "project-init 的兼容别名。"
+  default_prompt: "Use $cc-project-init as an alias for $project-init. Follow the standard project-init workflow: inspect this repository, generate or update the project-level AGENTS.md, initialize the minimal project-local .codex skeleton (.codex/tasks, .codex/tasks/archived, .codex/templates) without overwriting existing project files, and only add extra starter files after the user explicitly confirms them. If the user expects README.md generation, explain that README refresh belongs to $project-scan and suggest running $project-scan next."
+policy:
+  allow_implicit_invocation: false

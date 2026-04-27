@@ -1,6 +1,6 @@
 interface:
   display_name: "project-init"
   short_description: "显式初始化项目说明与基础脚手架文件。"
-  default_prompt: "Use $project-init to inspect this repository, generate a project-level AGENTS.md, initialize the minimal project-local .codex skeleton (.codex/tasks, .codex/tasks/archived, .codex/templates) without overwriting existing project files, and if creating that skeleton hits a workspace permission boundary, request the platform's approval prompt for the mkdir action instead of silently skipping it. Then add only the confirmed starter files this stack actually needs."
+  default_prompt: "Use $project-init to inspect this repository, generate a project-level AGENTS.md, initialize the minimal project-local .codex skeleton (.codex/tasks, .codex/tasks/archived, .codex/templates) without overwriting existing project files, and if creating that skeleton hits a workspace permission boundary, request the platform's approval prompt for the mkdir action instead of silently skipping it. Then add only the confirmed starter files this stack actually needs. Do not generate README.md by default; if the user expects README.md generation or refresh, explain that this belongs to $project-scan and suggest running $project-scan next."
 policy:
   allow_implicit_invocation: false

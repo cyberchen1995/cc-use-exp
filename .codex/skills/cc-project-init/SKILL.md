@@ -5,7 +5,7 @@ description: 结构化新项目初始化工作流，适用于显式 project-init
 
 # Project Init
 
-当用户明确要求 `project-init`、初始化新仓库、生成项目级 `AGENTS.md`，或按技术栈补基础脚手架时，使用本技能。
+当用户明确要求 `project-init`、`cc-project-init`、初始化新仓库、生成项目级 `AGENTS.md`，或按技术栈补基础脚手架时，使用本技能。
 
 不要用于：
 
@@ -13,6 +13,7 @@ description: 结构化新项目初始化工作流，适用于显式 project-init
 - 代替 feature 开发或 bug 修复
 - 无确认地覆盖已有 `AGENTS.md`、`Dockerfile` 或脚本
 - 为 Claude/Gemini 生成专属配置文件
+- 默认生成 `README.md` 这类扫描型项目文档；需要生成或刷新 README 时使用 `project-scan`
 
 ## 核心方式
 
@@ -22,7 +23,8 @@ description: 结构化新项目初始化工作流，适用于显式 project-init
 4. 默认同时初始化项目级 `.codex/` 最小骨架：`.codex/tasks/`、`.codex/tasks/archived/`、`.codex/templates/`，保证后续 `new-feature` 可直接持久化任务；若这些目录已存在，则只补缺失项，不整目录覆盖。若项目根目录本身没有写权限，必须先触发平台原生审批流程；只有审批后仍失败，才说明当前会话无法在该项目内初始化骨架。
 5. 只有用户明确要创建或补齐额外脚手架时，才从 `assets/` 选择对应模板；不要默认把所有模板都写进仓库。
 6. 如果目标文件已存在，先比较差异并说明保留/合并策略，避免整文件覆盖。
-7. 完成后说明创建了哪些文件、哪些模板没有使用，以及后续建议。
+7. 若用户预期生成 `README.md`、技术栈摘要、目录结构或快速开始说明，明确说明这是 `project-scan` 的职责，并建议继续执行 `$project-scan`。
+8. 完成后说明创建了哪些文件、哪些模板没有使用，以及后续建议。
 
 ## 资源选择
 

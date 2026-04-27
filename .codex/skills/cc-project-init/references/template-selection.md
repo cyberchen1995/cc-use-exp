@@ -23,6 +23,8 @@
 | `assets/restart-go.sh.tmpl` | Go 服务需要统一重启脚本 |
 | `assets/restart-java.sh.tmpl` | Java 服务需要统一重启脚本 |
 
+`README.md` 不属于 `project-init` 的默认模板；生成或刷新 README 时使用 `project-scan` 的 README 更新规则。
+
 ## 选择细则
 
 - `docker-compose` 模板是单用途基础版，不要把多份模板直接拼接后原样落盘。
@@ -31,3 +33,4 @@
 - `restart-*.sh` 只适合单服务项目；已有 systemd、supervisor、容器编排时通常不该新增。
 - `AGENTS.project.md` 应替换占位符，并删除不适用章节，不要把模板原样提交；保留 `AUTO:*` 区块结构，便于后续增量刷新。
 - `.claudeignore.tmpl` 和软著相关文件不属于 Codex 项目初始化范围，故未迁入本技能。
+- 如果用户明确要求 README、技术栈摘要、目录结构或快速开始说明，先转入 `project-scan`，不要在 `project-init` 中维护第二套 README 生成逻辑。

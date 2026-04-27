@@ -470,18 +470,21 @@ bash <(curl -sL https://raw.githubusercontent.com/doccker/cc-use-exp/main/tools/
 
 **低频工作流**：`$skill-update`、`$project-init`、`$project-scan`、`$status`
 
+兼容入口：`$cc-project-init` 等价于 `$project-init`，用于照顾按 cc-use-exp 前缀调用的习惯。
+
 项目级任务状态默认持久化到当前项目的 `.codex/tasks/`：
 
-- `$project-init` / `$project-scan` 用于补齐项目级 `.codex` 最小骨架
+- `$project-init` 用于生成项目级 `AGENTS.md`，并补齐项目级 `.codex` 最小骨架
+- `$project-scan` 用于扫描当前项目，生成或刷新项目级 `AGENTS.md` / `README.md`
 - `$new-feature` 用于完整功能开发与任务推进
 - `$cc-task-state` 用于沉淀“还没开始 / 被打断 / 待恢复”的任务状态，避免进展只留在对话里
 
 使用 `codex -p cc-custom-instructions`
 ![Chrome 插件独立配置界面（可指定自定义模型）](./pic/codex-unlock.png)
 
-### 大陆网络下 `gpt-5.4` 频繁 `reconnecting`
+### 大陆网络下 `gpt` 频繁 `reconnecting`
 
-如果你在大陆网络环境下使用 Codex，并且在 `gpt-5.4` 会话里频繁看到 `reconnecting`，可以先尝试为 Codex 增加代理环境变量。
+如果你在大陆网络环境下使用 Codex，并且在 `gpt` 会话里频繁看到 `reconnecting`，可以先尝试为 Codex 增加代理环境变量。
 
 仓库已提供可直接参考的模板文件：[`.codex/.env`](./.codex/.env)
 

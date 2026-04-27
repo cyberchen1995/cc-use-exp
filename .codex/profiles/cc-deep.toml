@@ -1,6 +1,6 @@
 # 深度分析 profile：复杂审查、重设计、长链路排障使用。
 # 不作为日常前端实现默认选择，避免把普通修改升级成重型方案。
 [profiles."cc-deep"]
-model = "gpt-5.4"
-review_model = "gpt-5.4"
+model = "gpt-5.5"
+review_model = "gpt-5.5"
 model_reasoning_effort = "high"
