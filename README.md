@@ -416,7 +416,7 @@ GEMINI.md 自动加载，提供以下保护：
 
 **前端专用**：`/layout`、`/layout-check`、`/vue-split`、`/patch-http`
 
-**通用命令**：`/fix`、`/debug`、`/code-review`、`/quick-review`、`/commit-msg`
+**通用命令**：`/fix`、`/debug`、`/code-review`、`/quick-review`、`/commit-msg`、`/new-feature`
 
 ---
 
@@ -482,9 +482,9 @@ bash <(curl -sL https://raw.githubusercontent.com/doccker/cc-use-exp/main/tools/
 
 输入 `$workflow-name` 执行工作流：
 
-**高频工作流**：`$fix`、`$review`、`$commit-msg`
+**高频工作流**：`$cc-fix`、`$cc-review`、`$cc-commit-msg`
 
-**中频工作流**：`$optimize`、`$new-feature`、`$design`、`$requirement`、`$cc-task-state`
+**中频工作流**：`$optimize`、`$cc-new-feature`、`$design`、`$requirement`、`$cc-task-state`
 
 **低频工作流**：`$skill-update`、`$project-init`、`$project-scan`、`$status`
 
@@ -494,7 +494,7 @@ bash <(curl -sL https://raw.githubusercontent.com/doccker/cc-use-exp/main/tools/
 
 - `$project-init` 用于生成项目级 `AGENTS.md`，并补齐项目级 `.codex` 最小骨架
 - `$project-scan` 用于扫描当前项目，生成或刷新项目级 `AGENTS.md` / `README.md`
-- `$new-feature` 用于完整功能开发与任务推进
+- `$cc-new-feature` 用于完整功能开发与任务推进
 - `$cc-task-state` 用于沉淀“还没开始 / 被打断 / 待恢复”的任务状态，避免进展只留在对话里
 
 使用 `codex -p cc-custom-instructions`

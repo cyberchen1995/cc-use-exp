@@ -8,9 +8,7 @@
     "pro": "gemini-3.1-pro-preview",
     "flash": "gemini-3-flash-preview"
   },
-  "experimental": {
-    "plan": true
-  },
+  "experimental": {},
   "core": {
     "checkForUpdates": false,
     "theme": "Default"
@@ -76,7 +74,10 @@
       "enabled": true,
       "maxAge": "30d"
     },
-    "defaultApprovalMode": "plan"
+    "defaultApprovalMode": "plan",
+    "plan": {
+      "enabled": true
+    }
   },
   "ui": {
     "inlineThinkingMode": "off",
@@ -86,5 +87,8 @@
   },
   "ide": {
     "hasSeenNudge": true
+  },
+  "agents": {
+    "overrides": {}
   }
 }

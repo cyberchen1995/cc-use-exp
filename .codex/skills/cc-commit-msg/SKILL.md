@@ -1,5 +1,5 @@
 ---
-name: commit-msg
+name: cc-commit-msg
 description: 结构化 git commit message 生成工作流，适用于显式 commit message、提交说明或 commit-msg 场景；不负责实际执行 git commit。
 ---
 

@@ -62,10 +62,10 @@ ls ~/.agents/skills/ | grep cc-
 
 ```bash
 # 测试 workflow skill
-$fix 测试问题
+$cc-fix 测试问题
 
 # 测试 commit message 生成
-$commit-msg
+$cc-commit-msg
 ```
 
 ---
