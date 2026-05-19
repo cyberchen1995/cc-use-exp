@@ -203,6 +203,34 @@ tools\sync-config.bat
 
 ---
 
+### 维护：跨平台 skill 单向同步
+
+新增/更新 skill 时，先在 `.claude/skills/` 编写权威版本，再用 `tools/sync-skill.sh` 单向同步到 Gemini / Cursor / Codex / Copilot：
+
+```bash
+./tools/sync-skill.sh                       # 同步全部 Claude skill 到 4 平台
+./tools/sync-skill.sh redis-safety          # 只同步指定 skill
+./tools/sync-skill.sh --target codex        # 只同步到指定平台
+./tools/sync-skill.sh --dry-run             # 仅打印计划，不实际操作
+./tools/sync-skill.sh --force               # 覆盖已存在的 skill（默认跳过）
+```
+
+同步规则：
+
+| 平台 | 目标路径 | 适配 |
+|------|---------|------|
+| Gemini | `.gemini/skills/{name}/` | 直接 cp |
+| Cursor | `.cursor/skills/{name}/` | 直接 cp |
+| Codex | `.codex/skills/cc-{name}/` | 加 `cc-` 前缀，自动替换内部跨 skill 引用，生成 `agents/openai.yaml` |
+| Copilot | `.github/instructions/{name}.instructions.md` | 半自动生成框架（applyTo: `**`），带 `AUTO-GENERATED` 注释提示人工精简 |
+
+**安全保障**：
+- 单向同步（Claude → 其他），不反向
+- 不删除各平台独有的 skill（如 Cursor 的 `ui-ux-pro-max`）
+- 默认不覆盖已存在 skill（用 `--force` 强制覆盖）
+
+---
+
 ## 支持的工具
 
 | 工具 | 配置目录 | 部署位置 | 安装方式 | 状态 |
@@ -331,6 +359,7 @@ tools\sync-config.bat
 
 操作相关文件时自动加载对应的开发规范：
 
+- **设计技能**：`code-quality-principles`
 - **语言技能**：`go-dev`、`java-dev`、`frontend-dev`、`python-dev`、`rust-dev`
 - **安全技能**：`ops-safety`、`redis-safety`、`api-design-safety`、`api-contract-safety`、`storage-url-safety`、`query-performance-safety`、`time-zone-safety`
 - **重构技能**：`refactor-safety`、`field-mapping-safety`
@@ -406,6 +435,7 @@ GEMINI.md 自动加载，提供以下保护：
 操作相关文件时自动加载对应的开发规范：
 
 - **前端技能**：`frontend-safety`（数据绑定保护、布局一致性）
+- **设计技能**：`code-quality-principles`
 - **语言技能**：`go-dev`、`java-dev`、`python-dev`、`rust-dev`
 - **安全技能**：`ops-safety`、`api-design-safety`、`api-contract-safety`、`storage-url-safety`、`query-performance-safety`、`time-zone-safety`
 - **工具技能**：`bash-style`
@@ -473,6 +503,7 @@ bash <(curl -sL https://raw.githubusercontent.com/doccker/cc-use-exp/main/tools/
 
 操作相关文件时自动加载对应的开发规范：
 
+- **设计技能**：`code-quality-principles`
 - **语言技能**：`go-dev`、`java-dev`、`frontend-dev`、`python-dev`、`rust-dev`
 - **安全技能**：`ops-safety`、`redis-safety`、`api-design-safety`、`api-contract-safety`、`storage-url-safety`、`query-performance-safety`、`time-zone-safety`
 - **重构技能**：`refactor-safety`、`field-mapping-safety`
@@ -558,6 +589,7 @@ NO_PROXY="localhost,127.0.0.1"
 
 Cursor Agent 根据 `description` 语义匹配，自动加载对应技能：
 
+- **设计技能**：`code-quality-principles`
 - **语言技能**：`go-dev`、`java-dev`、`frontend-dev`、`python-dev`、`rust-dev`
 - **安全技能**：`ops-safety`、`redis-safety`、`api-design-safety`、`api-contract-safety`、`storage-url-safety`、`query-performance-safety`、`time-zone-safety`
 - **重构技能**：`refactor-safety`、`field-mapping-safety`

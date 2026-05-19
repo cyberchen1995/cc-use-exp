@@ -1,0 +1,3 @@
+name: cc-code-quality-principles
+description: 模块化设计六原则检查清单（大小/深度/扇入扇出/边界/作用域/可预测）
+implicit: true

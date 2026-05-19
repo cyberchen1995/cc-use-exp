@@ -1,10 +1,7 @@
 ---
 name: redis-safety
-description: >-
-  Redis 安全与性能规范。当用户操作 Redis 相关代码（go-redis、Jedis、redis-py、ioredis）时触发。
-  包含禁止 KEYS 命令、SCAN 替代、大 key 控制、Pipeline 批量、TTL 规范等。
+description: 当用户操作 Redis 相关代码（go-redis、Jedis、redis-py、ioredis）时触发。涵盖禁止 KEYS 命令、SCAN 替代、大 key 控制、Pipeline 批量、TTL 规范等安全与性能要点。
 ---
-
 # Redis 安全规范
 
 > 防止 Redis 常见性能和稳定性问题，适用于所有语言。
@@ -31,6 +28,7 @@ keys, _ := rdb.Keys(ctx, "user:*").Result()
 var cursor uint64
 for {
     keys, cursor, _ = rdb.Scan(ctx, cursor, "user:*", 100).Result()
+    // 处理 keys
     if cursor == 0 { break }
 }
 ```
@@ -44,6 +42,7 @@ ScanParams params = new ScanParams().match("user:*").count(100);
 String cursor = "0";
 do {
     ScanResult<String> result = jedis.scan(cursor, params);
+    // 处理 result.getResult()
     cursor = result.getCursor();
 } while (!cursor.equals("0"));
 ```
@@ -54,7 +53,7 @@ keys = r.keys("user:*")
 
 # Python (redis-py) ✅
 for key in r.scan_iter(match="user:*", count=100):
-    pass
+    # 处理 key
 ```
 
 ### 2. 大 key 控制
@@ -64,6 +63,8 @@ for key in r.scan_iter(match="user:*", count=100):
 - 超过时拆分为多个 key
 
 ### 3. Pipeline 批量操作
+
+多次 Redis 调用应使用 Pipeline 减少网络往返：
 
 ```go
 // ❌ 循环单次调用
