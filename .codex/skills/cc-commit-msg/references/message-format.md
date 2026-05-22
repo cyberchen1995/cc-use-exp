@@ -35,6 +35,7 @@ EOF
 
 约束：
 
+- **输出语言**：`type` 保留英文（feat/fix/refactor 等 Conventional Commit 关键字），`subject` 与 `body` 必须使用简体中文
 - `subject` 保持单一主题，**最长不超过 80 字符**
 - `body` 只写用户真正关心的行为变化
 - **必须**给出 heredoc 落盘命令，不允许只给 message 文本而不给命令

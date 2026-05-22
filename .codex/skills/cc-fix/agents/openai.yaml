@@ -1,6 +1,6 @@
 interface:
   display_name: "cc-fix"
   short_description: "显式 bug 修复与结构化 debug 工作流。"
-  default_prompt: "Use $cc-fix to confirm the expected behavior and current symptom before reading the relevant code and proposing a minimal fix. If this fix interrupts an existing in-progress task, record a checkpoint first so the main task has a resume entry and next step before you switch context."
+  default_prompt: "使用 $cc-fix 先确认预期行为和当前症状，再阅读相关代码并提出最小修复方案。如果本次修复打断了已在进行中的主任务，先记录断点（包含主任务的恢复入口和下一步），再切换上下文。"
 policy:
   allow_implicit_invocation: false

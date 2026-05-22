@@ -25,7 +25,8 @@ description: 结构化 git commit message 生成工作流，适用于显式 comm
 
 - 使用 Conventional Commit 风格：`<type>: <subject>`
 - `subject` 简洁聚焦，不堆砌文件名
-- `body` 使用中文 flat bullets，说明核心改动
+- **输出语言**：`type` 关键字保留英文（feat/fix/refactor/style/docs/test/chore），`subject` 与 `body` 必须使用简体中文
+- `body` 使用 flat bullets，说明核心改动
 - 不加 emoji、AI 声明或 `Co-Authored-By`
 - 不替用户执行提交命令
 

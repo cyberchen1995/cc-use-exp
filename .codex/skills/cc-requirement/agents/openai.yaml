@@ -1,6 +1,6 @@
 interface:
   display_name: "requirement"
   short_description: "显式需求文档与 interrogate 工作流。"
-  default_prompt: "Use $requirement to identify the business goal, success criteria, and unclear edges before choosing interrogate or requirement-doc output."
+  default_prompt: "使用 $requirement 在选择 interrogate 或 requirement-doc 输出形式之前，先识别业务目标、成功标准和模糊边界。"
 policy:
   allow_implicit_invocation: false

@@ -1,6 +1,6 @@
 interface:
   display_name: "project-scan"
   short_description: "扫描仓库并生成或刷新 AGENTS.md / README.md / 全套脚手架（restart.sh、ignore、Dockerfile、docker-compose）。"
-  default_prompt: "Use $project-scan to inspect this repository, summarize the detected stack and project conventions, initialize the minimal project-local .codex skeleton (.codex/tasks, .codex/tasks/archived, .codex/templates) if missing, then create or update the repository-root AGENTS.md and README.md, AND scaffold the full project file set: restart.sh, .claudeignore, .geminiignore, .gitignore, .dockerignore, Dockerfile, docker-compose.yml. Reuse cc-project-init/assets templates for scaffolding. The output must match Claude Code /project-scan: never produce fewer files. For existing files, ask the user whether to overwrite / skip / incrementally update (AUTO blocks). chmod +x restart.sh after writing. Do not overwrite hand-written content silently."
+  default_prompt: "使用 $project-scan 扫描当前仓库，总结检测到的技术栈和项目约定；若缺失则初始化最小项目级 .codex 骨架（.codex/tasks、.codex/tasks/archived、.codex/templates），然后创建或更新仓库根目录的 AGENTS.md 和 README.md，并生成完整项目文件集：restart.sh、.claudeignore、.geminiignore、.gitignore、.dockerignore、Dockerfile、docker-compose.yml。脚手架复用 cc-project-init/assets 模板。输出必须与 Claude Code /project-scan 对齐：绝不少产文件。对已存在文件，要询问用户是覆盖 / 跳过 / 增量更新（AUTO 区块）。写入后对 restart.sh 执行 chmod +x。不得静默覆盖手写内容。"
 policy:
   allow_implicit_invocation: false

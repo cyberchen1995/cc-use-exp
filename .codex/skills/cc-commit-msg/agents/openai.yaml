@@ -1,6 +1,6 @@
 interface:
   display_name: "cc-commit-msg"
   short_description: "显式生成 Git commit message，默认分析 staged diff。"
-  default_prompt: "Use $cc-commit-msg to generate a git commit message for the current change set, preferring staged diff unless the user asks for all changes. Always end the reply with a heredoc git commit command (git commit -m \"$(cat <<'EOF' ... EOF)\") so subject and bullet body survive shell parsing — never output a single-line -m \"...\\n...\" form, and never collapse body bullets into the subject."
+  default_prompt: "使用 $cc-commit-msg 为当前改动生成 Git commit message。默认只看 staged diff，用户明确要求 all 或全部变更时再看完整工作区 diff。输出语言：type 关键字保留英文（feat/fix/refactor/style/docs/test/chore），subject 与 body 必须使用简体中文。回复末尾必须给出 heredoc 形式的 git commit 命令（git commit -m \"$(cat <<'EOF' ... EOF)\"），确保 subject 单行 + 空行 + body 多行 bullet 的结构在 shell 解析后仍然保留——禁止输出 -m \"...\\n...\" 这种单行形式，禁止把 body bullet 压进 subject 行。"
 policy:
   allow_implicit_invocation: false

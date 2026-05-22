@@ -7,6 +7,14 @@
 #   ./tools/sync-skill.sh --target codex     # 只同步到指定平台
 #   ./tools/sync-skill.sh --dry-run          # 仅打印计划，不实际操作
 #   ./tools/sync-skill.sh --force            # 覆盖已存在的 skill
+#
+# Codex 长模板保护：
+#   sync_to_codex 默认生成短模板（name + description + implicit: true），
+#   适用于 safety / dev 类隐式触发 skill。
+#   若目标 .codex/skills/cc-*/agents/openai.yaml 已存在且含 default_prompt
+#   （workflow 类显式触发 skill，如 cc-commit-msg、cc-fix 等），
+#   即使加 --force 也会保留该 yaml 原内容，仅同步 SKILL.md / references 等其他文件。
+#   如需强制重置长模板为短模板，请手动 rm -rf 目标目录后再 sync。
 
 set -euo pipefail
 
@@ -134,6 +142,12 @@ sync_to_codex() {
 
     should_sync "${dst}" "${cc_name}" "codex" || return 0
 
+    local existing_long_yaml=""
+    if [[ -f "${dst}/agents/openai.yaml" ]] && grep -q "default_prompt" "${dst}/agents/openai.yaml"; then
+        existing_long_yaml="$(cat "${dst}/agents/openai.yaml")"
+        log "🛡️  保护 codex/${cc_name}/agents/openai.yaml（含 default_prompt，长模板需人工维护，将保留原内容）"
+    fi
+
     log "📦 Codex ← ${cc_name}"
     run mkdir -p "${CODEX_DIR}"
     run rm -rf "${dst}"
@@ -142,7 +156,11 @@ sync_to_codex() {
     if [[ "${DRY_RUN}" -eq 1 ]]; then
         log "  - frontmatter name 改为 ${cc_name}"
         log "  - 替换内部跨 skill 引用为 cc- 前缀"
-        log "  - 生成 agents/openai.yaml"
+        if [[ -n "${existing_long_yaml}" ]]; then
+            log "  - 保留原 agents/openai.yaml（长模板）"
+        else
+            log "  - 生成 agents/openai.yaml（短模板）"
+        fi
         return 0
     fi
 
@@ -168,13 +186,17 @@ sync_to_codex() {
     rm -f "${dst}/SKILL.md.bak"
 
     mkdir -p "${dst}/agents"
-    local desc
-    desc="$(awk '/^description:/{sub(/^description: */,""); print; exit}' "${src}/SKILL.md")"
-    cat > "${dst}/agents/openai.yaml" <<YAML
+    if [[ -n "${existing_long_yaml}" ]]; then
+        printf '%s\n' "${existing_long_yaml}" > "${dst}/agents/openai.yaml"
+    else
+        local desc
+        desc="$(awk '/^description:/{sub(/^description: */,""); print; exit}' "${src}/SKILL.md")"
+        cat > "${dst}/agents/openai.yaml" <<YAML
 name: ${cc_name}
 description: ${desc}
 implicit: true
 YAML
+    fi
 }
 
 sync_to_copilot() {
