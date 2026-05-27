@@ -361,7 +361,7 @@ tools\sync-config.bat
 
 - **设计技能**：`code-quality-principles`
 - **语言技能**：`go-dev`、`java-dev`、`frontend-dev`、`python-dev`、`rust-dev`
-- **安全技能**：`ops-safety`、`redis-safety`、`api-design-safety`、`api-contract-safety`、`storage-url-safety`、`query-performance-safety`、`time-zone-safety`
+- **安全技能**：`ops-safety`、`redis-safety`、`api-design-safety`、`api-contract-safety`、`storage-url-safety`、`query-performance-safety`、`async-task-pattern`、`time-zone-safety`
 - **重构技能**：`refactor-safety`、`field-mapping-safety`
 - **工具技能**：`bash-style`、`size-check`
 
@@ -437,7 +437,7 @@ GEMINI.md 自动加载，提供以下保护：
 - **前端技能**：`frontend-safety`（数据绑定保护、布局一致性）
 - **设计技能**：`code-quality-principles`
 - **语言技能**：`go-dev`、`java-dev`、`python-dev`、`rust-dev`
-- **安全技能**：`ops-safety`、`api-design-safety`、`api-contract-safety`、`storage-url-safety`、`query-performance-safety`、`time-zone-safety`
+- **安全技能**：`ops-safety`、`api-design-safety`、`api-contract-safety`、`storage-url-safety`、`query-performance-safety`、`async-task-pattern`、`time-zone-safety`
 - **工具技能**：`bash-style`
 
 ### 中费力（显式调用）- Commands
@@ -505,7 +505,7 @@ bash <(curl -sL https://raw.githubusercontent.com/doccker/cc-use-exp/main/tools/
 
 - **设计技能**：`code-quality-principles`
 - **语言技能**：`go-dev`、`java-dev`、`frontend-dev`、`python-dev`、`rust-dev`
-- **安全技能**：`ops-safety`、`redis-safety`、`api-design-safety`、`api-contract-safety`、`storage-url-safety`、`query-performance-safety`、`time-zone-safety`
+- **安全技能**：`ops-safety`、`redis-safety`、`api-design-safety`、`api-contract-safety`、`storage-url-safety`、`query-performance-safety`、`async-task-pattern`、`time-zone-safety`
 - **重构技能**：`refactor-safety`、`field-mapping-safety`
 - **工具技能**：`bash-style`、`size-check`
 
@@ -591,7 +591,7 @@ Cursor Agent 根据 `description` 语义匹配，自动加载对应技能：
 
 - **设计技能**：`code-quality-principles`
 - **语言技能**：`go-dev`、`java-dev`、`frontend-dev`、`python-dev`、`rust-dev`
-- **安全技能**：`ops-safety`、`redis-safety`、`api-design-safety`、`api-contract-safety`、`storage-url-safety`、`query-performance-safety`、`time-zone-safety`
+- **安全技能**：`ops-safety`、`redis-safety`、`api-design-safety`、`api-contract-safety`、`storage-url-safety`、`query-performance-safety`、`async-task-pattern`、`time-zone-safety`
 - **重构技能**：`refactor-safety`、`field-mapping-safety`
 - **工具技能**：`bash-style`、`size-check`、`ruanzhu`、`ui-ux-pro-max`
 

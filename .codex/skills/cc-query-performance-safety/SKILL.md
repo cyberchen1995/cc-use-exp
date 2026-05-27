@@ -1,13 +1,13 @@
 ---
 name: cc-query-performance-safety
-description: 查询性能安全检查，防止 N+1、IN 子句过长、BFS 内存炸裂。
+description: 当代码涉及循环内查询、批量 ID 查询、IN 子句、BFS/递归遍历、嵌套 service 调用时触发。防止 N+1 查询、IN 子句过长、递归内存炸裂等性能陷阱。
 ---
 
 # 查询性能安全规范
 
 当代码涉及数据库或远程服务的批量查询时，防止 N+1、IN 子句过长、递归无界等高频性能陷阱。
 
-> 与 `multi-tenant-safety` 配合：本 skill 关注「查询效率」，租户隔离遵循后者。
+> 与 `cc-multi-tenant-safety` 配合：本 skill 关注「查询效率」，租户隔离遵循后者。
 
 ---
 
@@ -80,12 +80,130 @@ for (Order o : orders) {
 
 新增带 IN 的方法时**必须**和单条方法成对出现，避免上层不得不写 N+1。
 
-### 检查清单
+### 隐式 N+1：循环内调 DTO 转换函数
+
+最坑的一种 N+1 ——`convertToDTO()` / `toResponseDto()` / `enrichEntity()` 这类辅助方法看起来"一个函数搞定一切"，但内部可能藏着 4-5 次 `findById`，循环里调一次就是 N×K 次 SQL。
+
+```java
+// ❌ 看起来无害，实际触发 24000 次 SQL（6000 商品 × 4 次内部查询）
+public Map<String, List<ProductDTO>> findDuplicates() {
+    List<Product> products = productRepository.findByTenantId(tenantId);
+    Map<String, List<ProductDTO>> groups = new HashMap<>();
+    for (Product p : products) {
+        String key = normalize(p.getProductName() + p.getSpecification());
+        groups.computeIfAbsent(key, k -> new ArrayList<>())
+              .add(convertToDTO(p));  // ❌ 内部每次都查 category/supplier/image/price
+    }
+    return groups;
+}
+
+private ProductDTO convertToDTO(Product p) {
+    return ProductDTO.builder()
+        .categoryName(categoryRepository.findById(p.getCategoryId())...)     // +1
+        .supplier(productSupplierRepository.findByProductId(p.getId())...)   // +1
+        .imageUrl(productImageRepository.findByProductId(p.getId())...)      // +1
+        .priceTiers(priceTierRepository.findByProductId(p.getId())...)       // +1
+        .build();
+}
+```
+
+#### 修复策略
+
+**策略 A：两阶段处理**（推荐，适合"先筛选再展示"）
+
+```java
+// ✅ 阶段 1：用 entity 做筛选/分组，零额外查询
+Map<String, List<Product>> grouped = new HashMap<>();
+for (Product p : products) {
+    grouped.computeIfAbsent(key, k -> new ArrayList<>()).add(p);  // entity，不转 DTO
+}
+
+// 只对真正要展示的（如重复组 ≥ 2）做后续处理
+grouped.entrySet().removeIf(e -> e.getValue().size() < 2);
+
+// 阶段 2：批量预加载关联数据
+Set<Long> categoryIds = grouped.values().stream()
+    .flatMap(List::stream)
+    .map(Product::getCategoryId)
+    .filter(Objects::nonNull)
+    .collect(Collectors.toSet());
+Map<Long, String> categoryNameMap = categoryRepository.findAllById(categoryIds).stream()
+    .collect(Collectors.toMap(ProductCategory::getId, ProductCategory::getCategoryName));
+
+// 阶段 3：用 Map 转 DTO，零额外查询
+Map<String, List<ProductDTO>> result = new HashMap<>();
+grouped.forEach((k, list) -> {
+    result.put(k, list.stream()
+        .map(p -> toLightweightDTO(p, categoryNameMap))
+        .toList());
+});
+```
+
+**策略 B：场景化轻量 DTO 转换器**（推荐，结合策略 A）
+
+不同场景用不同 DTO 转换函数。完整版给详情接口，轻量版给列表/查重接口：
+
+```java
+// ✅ 列表/查重：只填实际需要的字段
+private ProductDTO toLightweightDTO(Product p, Map<Long, String> categoryNameMap) {
+    return ProductDTO.builder()
+        .id(p.getId())
+        .skuCode(p.getSkuCode())
+        .productName(p.getProductName())
+        .specification(p.getSpecification())
+        .categoryId(p.getCategoryId())
+        .categoryName(p.getCategoryId() == null ? null : categoryNameMap.get(p.getCategoryId()))
+        .status(p.getStatus())
+        .build();
+    // 不填 supplier/image/priceTiers，列表场景用不到
+}
+
+// 详情：用完整 convertToDTO
+public ProductDTO getDetail(Long id) {
+    return convertToDTO(productRepository.findById(id).orElseThrow());
+}
+```
+
+**策略 C：批量版 convertToDTO**（适合必须返回完整 DTO 的列表接口）
+
+```java
+public List<ProductDTO> convertToDTOs(List<Product> products) {
+    // 一次性预加载全部关联
+    Set<Long> categoryIds = products.stream().map(Product::getCategoryId).filter(Objects::nonNull).collect(Collectors.toSet());
+    Set<Long> productIds = products.stream().map(Product::getId).collect(Collectors.toSet());
+
+    Map<Long, ProductCategory> categoryMap = categoryRepository.findAllById(categoryIds).stream()
+        .collect(Collectors.toMap(ProductCategory::getId, c -> c));
+    Map<Long, List<ProductImage>> imageMap = productImageRepository.findByProductIdIn(productIds).stream()
+        .collect(Collectors.groupingBy(ProductImage::getProductId));
+    // ... 其他关联
+
+    // 转换时只查 Map
+    return products.stream()
+        .map(p -> toDTOWithPreloaded(p, categoryMap, imageMap, ...))
+        .toList();
+}
+```
+
+#### 嗅探信号
+
+代码评审时只要看到以下模式立即怀疑：
+
+- 任意循环（for/stream/forEach）里调用 `convertToDTO(...)` / `toResponseDto(...)` / `to...DTO(...)` / `enrich...(...)`
+- 看似"一行搞定"的辅助方法，其实跨了多个 Repository
+- 接口响应时间随数据量线性增长，但单条数据看不到明显慢点
+- 数据库 SQL 数 = 列表数 × 某个常数
+
+### 检查清单（陷阱 #1 全部场景）
 
 - [ ] service 方法里搜 `findById(` / `getOne(` / `getReferenceById(` / `findOne(`，是否在循环或 stream 链中
 - [ ] 每个 list-aware 方法的 SQL 次数与列表大小是否解耦（理想是 O(1) 或 O(log N) 而非 O(N)）
 - [ ] enrichment 辅助方法是否被循环调用（隐式 N+1）
 - [ ] 跨 service 调用（A.getDetail() → B.findX()）是否在循环里
+- [ ] 查重 / 列表 / 统计接口：是否在循环里调用 DTO 转换
+- [ ] DTO 转换函数内部 `findXxx` 调用次数 × 列表大小是否能接受
+- [ ] 是否区分了"列表轻量 DTO" vs "详情完整 DTO"
+- [ ] 批量场景是否提供了 `convertToDTOs(List<T>)` 版本
 
 ---
 

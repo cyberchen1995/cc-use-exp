@@ -1,3 +1,3 @@
 name: cc-field-mapping-safety
-description: 字段映射安全检查，防止字段名推测错误和枚举映射不完整
+description: 当重构涉及字段映射（dataIndex、枚举映射、类型转换）时触发。防止字段名推测错误，确保字段映射的正确性。
 implicit: true

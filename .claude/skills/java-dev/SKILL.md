@@ -295,85 +295,19 @@ class UserServiceTest {
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
-    private final EmailService emailService;
-}
-
-// ✅ REST Controller
-@RestController
-@RequestMapping("/api/users")
-public class UserController {
-    @GetMapping("/{id}")
-    public ResponseEntity<UserDto> findById(@PathVariable Long id) {
-        return userService.findById(id)
-            .map(ResponseEntity::ok)
-            .orElse(ResponseEntity.notFound().build());
-    }
 }
 ```
 
-### Auth Filter 降级原则
+| 主题 | 一句话规则 |
+|------|----------|
+| 注入方式 | 用 `@RequiredArgsConstructor` 构造函数注入，不用 `@Autowired` 字段注入 |
+| Auth 降级 | optional-auth 路径遇无效/过期 token 降级为匿名，不返回 401/403 |
+| 循环依赖 | Spring Boot 3.x 默认禁止构造器循环依赖，从大 Service 拆分子 Service 时先用工具类共享方法，再考虑 `@Lazy` |
+| self-invocation | `this.method()` 不走代理，`@Transactional`/`@Async`/`@Cacheable` 全部失效；用 self-injection 或拆 Bean |
+| `@Modifying` JPA | 必须在 `@Transactional` 中调用，否则抛 `Executing an update/delete query` |
+| 分页参数 | 全栈统一 0-based，Controller `defaultValue = "0"`，Service 直接 `PageRequest.of(page, size)` |
 
-| 规则 | 说明 |
-|------|------|
-| ✅ optional-auth 路径遇到无效/过期/不完整 token 时降级为匿名访问 | 不应返回 401/403 |
-| ❌ 禁止部分凭证用户体验差于匿名用户 | 如：临时 token 在公开接口返回 403 |
-
-### 循环依赖防范（Spring Boot 3.x）
-
-Spring Boot 3.x 默认禁止构造器循环依赖。从大 Service 拆分子 Service 时必须检查依赖方向。
-
-| 处理方式 | 优先级 | 适用场景 |
-|----------|--------|---------|
-| 提取公共方法到独立工具类 | ✅ 首选 | 纯工具方法（如 resolveTenantIds） |
-| `@Lazy` 字段注入 | ⚠️ 应急 | 确实需要双向调用 |
-| `Function<>` 回调 | ⚠️ 备选 | 灵活但增加复杂度 |
-
-```java
-// ❌ 拆分后子服务回调父服务 → 循环依赖
-@RequiredArgsConstructor
-public class ReportInvoiceService {
-    private final ReportService reportService; // 启动失败！
-}
-
-// ✅ 提取公共方法到独立类
-@Component
-public class TenantHelper {
-    public List<Long> resolveTenantIds(Long tenantId) { ... }
-}
-```
-
-> 详见 `refactor-safety` skill - 陷阱 #5
-
-### 分页参数规范（Spring Data JPA）
-
-Spring Data JPA 分页索引从 0 开始。重构分页参数时必须确保前后端索引基准一致。
-
-| 规则 | 说明 |
-|------|------|
-| 全栈统一 0-based | 前端、Controller、Service、JPA 全部使用 0-based 索引 |
-| Controller 默认值必须是 0 | `@RequestParam(defaultValue = "0") int page` |
-| Service 直接使用 page | `PageRequest.of(page, size)`，不要 `page - 1` |
-
-```java
-// ❌ 错误：前端传 page=0，Controller 默认值 1，Service 内部 -1
-@GetMapping("/list")
-public Page<Product> list(@RequestParam(defaultValue = "1") int page) {
-    return service.list(page);  // Service 内部 PageRequest.of(page - 1, size)
-}
-// 问题：前端传 page=0 → Service 计算 page - 1 = -1 → 异常
-
-// ✅ 正确：全栈统一 0-based
-@GetMapping("/list")
-public Page<Product> list(@RequestParam(defaultValue = "0") int page) {
-    return service.list(page);  // Service 内部 PageRequest.of(page, size)
-}
-```
-
-**重构检查清单**：
-- [ ] 前端调用传递 `page: 0`（第 1 页）
-- [ ] Controller 默认值是 `0`
-- [ ] Service 使用 `PageRequest.of(page, size)`（不减 1）
-- [ ] 测试 `page=0` 和 `page=1` 都能正常返回数据
+> 详细规则、修复模板和检查清单见 `references/spring.md`
 
 ---
 
@@ -558,6 +492,7 @@ public class MiniAppConfigController { }
 | 文件 | 内容 |
 |------|------|
 | `references/java-style.md` | 命名约定、异常处理、Spring Boot、测试规范 |
+| `references/spring.md` | Spring Boot 完整规范：注入、Auth 降级、循环依赖、self-invocation 陷阱、分页参数 |
 | `references/collections.md` | 不可变集合（Guava）、字符串分割 |
 | `references/concurrency.md` | 线程池配置、CompletableFuture 超时 |
 | `references/concurrency-db-patterns.md` | Get-Or-Create 并发、N+1 防范、原子更新、Redis+DB 一致性 |

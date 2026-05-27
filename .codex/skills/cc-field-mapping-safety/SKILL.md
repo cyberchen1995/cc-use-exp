@@ -153,6 +153,93 @@ rowKey={(record, index) => `${record.changedAt}-${index}`}
 rowKey={(record) => record.id}
 ```
 
+### 陷阱 5: 同步覆盖时未考虑"源端缺失"和"人工调整"
+
+**场景**：从外部源（雷珏、ERP、CRM）定时/手动同步数据到本系统，每次同步都直接覆盖目标字段。
+
+#### 风险 5.1：源端字段为 null/缺失 → 清空目标端已有值
+
+```java
+// ❌ 源端这次没返回 categoryId，目标端 categoryId 被清成 null
+public void syncFromExternal(ExternalDetail detail) {
+    Product product = productRepository.findById(detail.getProductId()).orElseThrow();
+    Long categoryId = resolveCategory(detail);  // 可能返回 null
+    product.setCategoryId(categoryId);  // null 也覆盖 → 用户之前手动设置的分类被清空
+    productRepository.save(product);
+}
+
+// ✅ 源端缺失则不覆盖
+public void syncFromExternal(ExternalDetail detail) {
+    Product product = productRepository.findById(detail.getProductId()).orElseThrow();
+    Long categoryId = resolveCategory(detail);
+    if (categoryId != null && !Objects.equals(product.getCategoryId(), categoryId)) {
+        product.setCategoryId(categoryId);
+        productRepository.save(product);
+    }
+}
+```
+
+#### 风险 5.2：用户手动调整后被下一次同步覆盖
+
+**场景**：用户在系统里把雷珏导入的商品分类从「家居」改到「办公用品」，下次雷珏导入又强制覆盖回「家居」→ 用户操作被悄悄丢弃。
+
+**伴随策略（last-sync-value pattern）**：在 mapping 表里记录"上次同步时给目标端的值"，再覆盖前判断目标端是否仍等于该值。如果不等说明用户手动改过，跳过覆盖。
+
+```java
+// 1. mapping 表新增 last_category_id 字段
+@Entity
+public class LeijueProductMapping {
+    private Long productId;
+    private Long lastCategoryId;  // 上次同步时设置的 categoryId
+    // ...
+}
+
+// 2. 同步时按"伴随策略"判定
+private boolean syncCategoryField(Product product, Long newCategoryId, Long lastCategoryId) {
+    if (newCategoryId == null) return false;  // 源缺失不动（风险 5.1）
+
+    boolean isInitial = product.getCategoryId() == null;
+    boolean followingLastSync = Objects.equals(product.getCategoryId(), lastCategoryId);
+
+    if (isInitial || followingLastSync) {
+        product.setCategoryId(newCategoryId);
+        return true;
+    } else {
+        log.info("跳过覆盖，目标已被人工调整: productId={}, current={}, lastSync={}, source={}",
+                product.getId(), product.getCategoryId(), lastCategoryId, newCategoryId);
+        return false;
+    }
+}
+
+// 3. 同步成功后更新 lastCategoryId
+if (newCategoryId != null) {
+    mapping.setLastCategoryId(newCategoryId);
+}
+```
+
+#### 决策矩阵
+
+| 源端值 | 目标当前值 == lastSyncValue | 决策 |
+|--------|----------------------------|------|
+| null | 任意 | **不动**（源缺失不清空） |
+| 有值 | true（仍是上次同步值） | **覆盖**（用户未改过，跟随同步） |
+| 有值 | false（与上次不一致） | **跳过**（用户改过，不要覆盖） |
+| 有值 | 目标为 null | **覆盖**（首次同步） |
+
+#### 何时不需要伴随策略
+
+- 不可由用户编辑的字段（如外部唯一 ID、订单号、外部状态码）：直接覆盖即可
+- 计算字段（如统计快照）：每次重算覆盖
+- 主数据强一致场景（如供应商目录）：明确以外部为准
+
+#### 检查清单
+
+- [ ] 同步流程里写 `entity.setXxx(newValue)` 前是否有 null 判断
+- [ ] 源端字段为 null 时是否会错误清空目标端
+- [ ] 用户可编辑的字段是否考虑"人工调整不被覆盖"
+- [ ] 需要伴随策略的字段是否在 mapping 表里有 `last_xxx` 列
+- [ ] 跳过同步时是否打 `log.info` 便于排查
+
 ---
 
 ## 验证流程

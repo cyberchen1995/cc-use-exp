@@ -307,6 +307,78 @@ private void validateRequiredFields(List<TradeOrder> orders, Map<Long, PaymentRe
 
 ---
 
+## 陷阱 #6: 业务错用框架异常 → 全部变成 500
+
+**场景**：在 Service 里用 `throw new IllegalArgumentException("系统分类不可用")` 表达业务错误，前端拿到 500 + 一坨堆栈。
+
+### 问题根因
+
+Spring 默认全局异常处理把 `IllegalArgumentException` / `IllegalStateException` / `RuntimeException` 等**框架/JDK 异常**都归类为"代码 bug"，返回 HTTP 500 + 通用错误。
+项目通常有自定义的 `BusinessException`（或 `BizException`），全局 handler 把它处理成 HTTP 200 + 业务 code 4xx + 用户友好的 message。
+**用错异常类型 → 前端拿不到正确的 message、用户看不到原因、监控告警被业务错刷屏。**
+
+### 错误示例
+
+```java
+// ❌ 框架异常被全局 handler 处理成 500
+public void updateMapping(Long id, Long categoryId) {
+    ProductCategory category = repository.findById(categoryId)
+        .orElseThrow(() -> new IllegalArgumentException("系统分类不存在"));
+    if (category.getStatus() != ACTIVE) {
+        throw new IllegalArgumentException("系统分类不可用");  // 500 + 堆栈
+    }
+}
+```
+
+### 正确做法
+
+```java
+// ✅ 用项目自定义业务异常
+public void updateMapping(Long id, Long categoryId) {
+    ProductCategory category = repository.findById(categoryId)
+        .orElseThrow(() -> new BusinessException("系统分类不存在"));
+    if (category.getStatus() != ACTIVE) {
+        throw new BusinessException("系统分类不可用");  // 200 + code 4xx + 友好 message
+    }
+}
+```
+
+### 异常类型对照表
+
+| 场景 | 抛什么异常 | 全局 handler 处理 | HTTP 状态 |
+|------|----------|------------------|----------|
+| 业务规则不满足（金额超额、状态不允许） | `BusinessException` | 200 + code 4xx + 业务 message | 200 |
+| 参数格式错误（手动校验） | `BusinessException` 或 `@Valid` 触发的 `MethodArgumentNotValidException` | 200 + code 400 + 字段提示 | 200 |
+| 资源不存在 | `BusinessException` 或自定义 `NotFoundException` | 200 + code 404 + 业务 message | 200 |
+| 无权限 | `AccessDeniedException`（Spring Security 处理） | 403 | 403 |
+| 未认证 | `AuthenticationException`（Spring Security 处理） | 401 | 401 |
+| 代码 bug（不可能 null、断言失败） | `IllegalStateException` / `AssertionError` | 500 + 通用错误 + 告警 | 500 |
+| 外部依赖故障（远程 API 5xx、DB 断连） | 让框架异常冒泡，全局 handler 转 500 | 500 + 通用错误 + 告警 | 500 |
+
+**核心原则**：
+
+- **业务可预期的错** → `BusinessException`（用户可理解、不该告警）
+- **代码 bug / 系统故障** → 让框架异常冒泡（应该告警、应该排查）
+- **不要为了"统一抛 BusinessException"就把 NPE / 状态机违反包装成业务错** —— 那会让告警漏掉真正的 bug
+
+### 嗅探信号
+
+代码评审看到以下任一立即怀疑：
+
+- Service 里 `throw new IllegalArgumentException(...)` 或 `throw new RuntimeException(...)` 包业务错
+- `orElseThrow(() -> new IllegalArgumentException(...))` 表达"找不到资源"
+- 前端报 500 但业务接口逻辑明显是用户输入错（应该 4xx）
+- 全局异常 handler 里没有 `BusinessException` 的分支
+
+### 检查清单
+
+- [ ] Service 抛业务错是否用 `BusinessException`（不是 `IllegalArgumentException`）
+- [ ] `orElseThrow` 是否用业务异常
+- [ ] 全局异常 handler 是否区分了 `BusinessException`（200 + code 4xx） vs 其他异常（500）
+- [ ] 报 500 的接口是否真的是代码 bug（而非业务错误被错误归类）
+
+---
+
 ## 适用范围
 
 - Java: Spring Boot REST API
