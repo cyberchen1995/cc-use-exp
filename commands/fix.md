@@ -4,6 +4,11 @@ allowed-tools: Read, Grep, Glob, Bash(git diff:*), Bash(git log:*), Bash(go test
 argument-hint: "[debug] 问题描述。默认快速修复"
 ---
 
+> **流程主权声明**：本命令是用户显式调用的修复/调试工作流，已内置「快速修复」(模式 1) 和「debug 系统化调试」(模式 2) 两套独立流程。
+> 禁止在本流程执行期间调用 `superpowers:systematic-debugging`、`superpowers:brainstorming`、`superpowers:writing-plans` 或任何会接管修复/调试流程的外部 skill；本命令自己就是调试流程，无需再嵌套一层。
+> 业务领域类 skill（如 `redis-safety`、`api-contract-safety`、`payment-callback-safety`、`time-zone-safety` 等触发条件匹配的安全/规范类技能）正常按需加载，仅作防御性参考，不接管流程。
+> 本声明依据 superpowers 自身的优先级规则：用户显式指令 > superpowers skills。
+
 根据参数选择模式：
 
 - `/fix [问题描述]` → 快速修复（定位 → 修复 → 验证）
