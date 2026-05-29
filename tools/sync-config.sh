@@ -24,6 +24,7 @@ CODEX_MANAGED_START="<!-- cc-use-exp codex managed:start -->"
 CODEX_MANAGED_END="<!-- cc-use-exp codex managed:end -->"
 CODEX_PROFILE_START="# cc-use-exp codex profiles:start"
 CODEX_PROFILE_END="# cc-use-exp codex profiles:end"
+CC_USE_EXP_SYNC_TARGETS="${CC_USE_EXP_SYNC_TARGETS:-}"
 SYNC_FAILURES=0
 
 run_sync_section() {
@@ -37,6 +38,28 @@ run_sync_section() {
     SYNC_FAILURES=$((SYNC_FAILURES + 1))
     print_line "${RED}[${section_name}] 同步失败，但脚本会继续后续分段${NC}"
     return 0
+}
+
+should_sync_target() {
+    local target="$1"
+    local normalized
+
+    [[ -z "$CC_USE_EXP_SYNC_TARGETS" ]] && return 0
+
+    normalized=",${CC_USE_EXP_SYNC_TARGETS// /,},"
+    [[ "$normalized" == *",$target,"* ]]
+}
+
+run_selected_sync_section() {
+    local target="$1"
+    local section_name="$2"
+    shift 2
+
+    if should_sync_target "$target"; then
+        run_sync_section "$section_name" "$@"
+    else
+        print_line "${YELLOW}[${section_name}] 按 CC_USE_EXP_SYNC_TARGETS 跳过${NC}"
+    fi
 }
 
 merge_managed_block() {
@@ -70,37 +93,87 @@ merge_managed_block() {
     mv "$tmp_file" "$dst_file"
 }
 
-build_profiles_bundle() {
+remove_managed_block() {
+    local dst_file="$1"
+    local start_marker="$2"
+    local end_marker="$3"
+    local tmp_file
+
+    [[ -f "$dst_file" ]] || return 0
+
+    tmp_file="$(mktemp)"
+    awk -v start="$start_marker" -v end="$end_marker" '
+        $0 == start { skip = 1; next }
+        $0 == end { skip = 0; next }
+        !skip { print }
+    ' "$dst_file" > "$tmp_file"
+
+    if cmp -s "$dst_file" "$tmp_file"; then
+        rm -f "$tmp_file"
+        return 0
+    fi
+
+    mv "$tmp_file" "$dst_file"
+    print_line "${YELLOW}  已移除 ~/.codex/config.toml 中旧式 profiles 受管区块${NC}"
+}
+
+sync_managed_codex_profiles() {
     local src_dir="$1"
+    local dst_dir="$2"
+    local config_file="$3"
+    local manifest_file="$dst_dir/.cc-use-exp-profiles"
+    local new_manifest
     local profile_file
     local profile_list
     local profile_name
+    local profile_target
+    local profile_names
 
-    CODEX_PROFILE_BUNDLE="$(mktemp)"
-    CODEX_PROFILE_NAMES="$(mktemp)"
     CODEX_PROFILES_SYNCED=0
+    mkdir -p "$dst_dir"
+    new_manifest="$(mktemp)"
     profile_list="$(mktemp)"
+    profile_names="$(mktemp)"
 
     find "$src_dir" -maxdepth 1 -type f -name '*.toml' | LC_ALL=C sort > "$profile_list"
 
-    printf '# Managed Codex profiles from cc-use-exp\n' >> "$CODEX_PROFILE_BUNDLE"
-    printf '# Use with: codex -p <profile-name>\n\n' >> "$CODEX_PROFILE_BUNDLE"
-
     while IFS= read -r profile_file; do
         [[ -n "$profile_file" ]] || continue
-        profile_name="$(sed -nE 's/^\[profiles\."([^"]+)"\][[:space:]]*$/\1/p; s/^\[profiles\.([A-Za-z0-9_-]+)\][[:space:]]*$/\1/p' "$profile_file" | head -n 1)"
-        if [[ -n "$profile_name" ]]; then
-            printf '%s\n' "$profile_name" >> "$CODEX_PROFILE_NAMES"
+        profile_name="$(basename "$profile_file" .toml)"
+        profile_target="${profile_name}.config.toml"
+
+        if [[ ! "$profile_name" =~ ^[A-Za-z0-9_-]+$ ]]; then
+            print_line "${RED}  profile 文件名非法: ${profile_name}${NC}"
+            rm -f "$new_manifest" "$profile_list" "$profile_names"
+            return 1
         fi
+
+        if grep -Eq '^[[:space:]]*\[profiles\.' "$profile_file"; then
+            print_line "${RED}  profile 仍使用旧式 [profiles.*] 表: ${profile_file}${NC}"
+            rm -f "$new_manifest" "$profile_list" "$profile_names"
+            return 1
+        fi
+
+        validate_toml_file "$profile_file"
+        cp "$profile_file" "$dst_dir/$profile_target"
+        printf '%s\n' "$profile_target" >> "$new_manifest"
+        printf '%s\n' "$profile_name" >> "$profile_names"
         CODEX_PROFILES_SYNCED=$((CODEX_PROFILES_SYNCED + 1))
-        cat "$profile_file" >> "$CODEX_PROFILE_BUNDLE"
-        if [[ -s "$profile_file" && -n "$(tail -c 1 "$profile_file" 2>/dev/null)" ]]; then
-            printf '\n' >> "$CODEX_PROFILE_BUNDLE"
-        fi
-        printf '\n' >> "$CODEX_PROFILE_BUNDLE"
     done < "$profile_list"
 
-    rm -f "$profile_list"
+    if [[ -f "$manifest_file" ]]; then
+        while IFS= read -r profile_target; do
+            [[ -n "$profile_target" ]] || continue
+            if ! grep -Fxq "$profile_target" "$new_manifest"; then
+                rm -f "$dst_dir/$profile_target"
+            fi
+        done < "$manifest_file"
+    fi
+
+    mv "$new_manifest" "$manifest_file"
+    remove_managed_block "$config_file" "$CODEX_PROFILE_START" "$CODEX_PROFILE_END"
+    remove_conflicting_profile_tables "$config_file" "$profile_names"
+    rm -f "$profile_list" "$profile_names"
 }
 
 remove_conflicting_profile_tables() {
@@ -326,6 +399,36 @@ sync_managed_optional_tree() {
     fi
 
     rm -f "$path_list"
+    mv "$new_manifest" "$manifest_file"
+}
+
+sync_codex_tasks_skeleton() {
+    local src_dir="$1"
+    local dst_dir="$2"
+    local manifest_file="$dst_dir/.cc-use-exp-managed"
+    local new_manifest
+    local rel_path
+
+    mkdir -p "$dst_dir/archived"
+    new_manifest="$(mktemp)"
+
+    for rel_path in ".gitkeep" "archived/.gitkeep"; do
+        if [[ -f "$src_dir/$rel_path" ]]; then
+            mkdir -p "$(dirname "$dst_dir/$rel_path")"
+            cp "$src_dir/$rel_path" "$dst_dir/$rel_path"
+            printf '%s\n' "$rel_path" >> "$new_manifest"
+        fi
+    done
+
+    if [[ -f "$manifest_file" ]]; then
+        while IFS= read -r rel_path; do
+            [[ -n "$rel_path" ]] || continue
+            if ! grep -Fxq "$rel_path" "$new_manifest" && [[ -f "$dst_dir/$rel_path" ]]; then
+                rm -f "$dst_dir/$rel_path"
+            fi
+        done < "$manifest_file"
+    fi
+
     mv "$new_manifest" "$manifest_file"
 }
 
@@ -600,7 +703,7 @@ sync_codex() {
     fi
 
     if [[ -d "$CODEX_TASKS_SRC" ]]; then
-        sync_managed_optional_tree "$CODEX_TASKS_SRC" "$CODEX_TASKS_DST"
+        sync_codex_tasks_skeleton "$CODEX_TASKS_SRC" "$CODEX_TASKS_DST"
     fi
 
     sync_codex_project_skeleton
@@ -610,12 +713,8 @@ sync_codex() {
     CODEX_PROFILES_SYNCED=0
 
     if [[ -d "$CODEX_PROFILES_SRC" ]]; then
-        build_profiles_bundle "$CODEX_PROFILES_SRC"
-        remove_conflicting_profile_tables "$CODEX_CONFIG_DST" "$CODEX_PROFILE_NAMES"
-        merge_managed_block "$CODEX_PROFILE_BUNDLE" "$CODEX_CONFIG_DST" "$CODEX_PROFILE_START" "$CODEX_PROFILE_END"
-        validate_toml_file "$CODEX_CONFIG_DST"
-        rm -f "$CODEX_PROFILE_BUNDLE" "$CODEX_PROFILE_NAMES"
-        print_line "${GREEN}  ✓ profiles: ${CODEX_PROFILES_SYNCED} 个，已合并到 ~/.codex/config.toml${NC}"
+        sync_managed_codex_profiles "$CODEX_PROFILES_SRC" "${HOME}/.codex" "$CODEX_CONFIG_DST"
+        print_line "${GREEN}  ✓ profiles: ${CODEX_PROFILES_SYNCED} 个，同步到 ~/.codex/*.config.toml${NC}"
     else
         print_line "${YELLOW}  未找到 profiles/，跳过 profile 同步${NC}"
     fi
@@ -627,7 +726,7 @@ sync_codex() {
     print_line "${GREEN}  ✓ 项目 .codex 骨架模板已同步到 ~/.codex/project-template/${NC}"
     print_line "${YELLOW}  已保留 ~/.codex 运行态文件（auth/history/logs/cache）${NC}"
     printf '\n'
-    print_line "${YELLOW}[Codex] 若要在其他项目中持久化任务，请在目标项目根目录执行 \$project-init、\$project-scan 或 \$new-feature${NC}"
+    print_line "${YELLOW}[Codex] 若要在其他项目中持久化任务，请在目标项目根目录执行 \$project-init、\$project-scan 或 \$cc-new-feature${NC}"
     return 0
 }
 
@@ -787,15 +886,15 @@ sync_cursor() {
     return 0
 }
 
-run_sync_section "Claude Code" sync_claude_code
+run_selected_sync_section "claude" "Claude Code" sync_claude_code
 printf '\n'
-run_sync_section "Gemini CLI" sync_gemini_cli
+run_selected_sync_section "gemini" "Gemini CLI" sync_gemini_cli
 printf '\n'
-run_sync_section "Codex" sync_codex
+run_selected_sync_section "codex" "Codex" sync_codex
 printf '\n'
-run_sync_section "GitHub Copilot" sync_github_copilot
+run_selected_sync_section "copilot" "GitHub Copilot" sync_github_copilot
 printf '\n'
-run_sync_section "Cursor" sync_cursor
+run_selected_sync_section "cursor" "Cursor" sync_cursor
 printf '\n'
 
 if [[ "$SYNC_FAILURES" -gt 0 ]]; then
@@ -804,6 +903,8 @@ if [[ "$SYNC_FAILURES" -gt 0 ]]; then
 fi
 
 print_line "${GREEN}=== 同步完成 ===${NC}"
-print_line "${YELLOW}提示: 若在项目目录运行 gemini 出现 'Skill conflict detected' 警告：${NC}"
-print_line "  这是由于 Gemini CLI 同时加载了全局 (~/.gemini) 和局部 (.gemini) 配置，属于预期行为。"
-print_line "  局部配置将自动覆盖全局配置，不影响功能使用。"
+if should_sync_target "gemini"; then
+    print_line "${YELLOW}提示: 若在项目目录运行 gemini 出现 'Skill conflict detected' 警告：${NC}"
+    print_line "  这是由于 Gemini CLI 同时加载了全局 (~/.gemini) 和局部 (.gemini) 配置，属于预期行为。"
+    print_line "  局部配置将自动覆盖全局配置，不影响功能使用。"
+fi

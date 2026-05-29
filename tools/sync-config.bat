@@ -191,6 +191,11 @@ if exist "%SCRIPT_DIR%\.codex" (
     if not exist "%HOME_DIR%\.codex" mkdir "%HOME_DIR%\.codex"
     if not exist "%HOME_DIR%\.codex\rules" mkdir "%HOME_DIR%\.codex\rules"
     if not exist "%HOME_DIR%\.codex\instructions" mkdir "%HOME_DIR%\.codex\instructions"
+    if not exist "%HOME_DIR%\.codex\templates" mkdir "%HOME_DIR%\.codex\templates"
+    if not exist "%HOME_DIR%\.codex\tasks" mkdir "%HOME_DIR%\.codex\tasks"
+    if not exist "%HOME_DIR%\.codex\tasks\archived" mkdir "%HOME_DIR%\.codex\tasks\archived"
+    if not exist "%HOME_DIR%\.codex\project-template\.codex\tasks\archived" mkdir "%HOME_DIR%\.codex\project-template\.codex\tasks\archived"
+    if not exist "%HOME_DIR%\.codex\project-template\.codex\templates" mkdir "%HOME_DIR%\.codex\project-template\.codex\templates"
     if not exist "%HOME_DIR%\.agents" mkdir "%HOME_DIR%\.agents"
     if not exist "%HOME_DIR%\.agents\skills" mkdir "%HOME_DIR%\.agents\skills"
 
@@ -202,8 +207,11 @@ if exist "%SCRIPT_DIR%\.codex" (
     set "CODEX_RULES_SRC=%SCRIPT_DIR%\.codex\global\rules"
     set "CODEX_INSTRUCTIONS_SRC=%SCRIPT_DIR%\.codex\instructions"
     set "CODEX_SKILLS_SRC=%SCRIPT_DIR%\.codex\skills"
+    set "CODEX_TEMPLATES_SRC=%SCRIPT_DIR%\.codex\templates"
+    set "CODEX_TASKS_SRC=%SCRIPT_DIR%\.codex\tasks"
     set "CODEX_PROFILES_SRC=%SCRIPT_DIR%\.codex\profiles"
     set "CODEX_CONFIG_DST=%HOME_DIR%\.codex\config.toml"
+    set "CODEX_PROFILES_MANIFEST=%HOME_DIR%\.codex\.cc-use-exp-profiles"
     set "RULES_MANIFEST=%HOME_DIR%\.codex\rules\.cc-use-exp-managed"
     set "INSTRUCTIONS_MANIFEST=%HOME_DIR%\.codex\instructions\.cc-use-exp-managed"
     set "SKILLS_MANIFEST=%HOME_DIR%\.agents\skills\.cc-use-exp-managed"
@@ -261,14 +269,21 @@ if exist "%SCRIPT_DIR%\.codex" (
         )
     )
 
+    if exist "!CODEX_TEMPLATES_SRC!\.gitkeep" copy /y "!CODEX_TEMPLATES_SRC!\.gitkeep" "%HOME_DIR%\.codex\templates\.gitkeep" >nul
+    if exist "!CODEX_TASKS_SRC!\.gitkeep" copy /y "!CODEX_TASKS_SRC!\.gitkeep" "%HOME_DIR%\.codex\tasks\.gitkeep" >nul
+    if exist "!CODEX_TASKS_SRC!\archived\.gitkeep" copy /y "!CODEX_TASKS_SRC!\archived\.gitkeep" "%HOME_DIR%\.codex\tasks\archived\.gitkeep" >nul
+    if exist "!CODEX_TASKS_SRC!\.gitkeep" copy /y "!CODEX_TASKS_SRC!\.gitkeep" "%HOME_DIR%\.codex\project-template\.codex\tasks\.gitkeep" >nul
+    if exist "!CODEX_TASKS_SRC!\archived\.gitkeep" copy /y "!CODEX_TASKS_SRC!\archived\.gitkeep" "%HOME_DIR%\.codex\project-template\.codex\tasks\archived\.gitkeep" >nul
+    if exist "!CODEX_TEMPLATES_SRC!\.gitkeep" copy /y "!CODEX_TEMPLATES_SRC!\.gitkeep" "%HOME_DIR%\.codex\project-template\.codex\templates\.gitkeep" >nul
+
     set "CODEX_PROFILES_SYNCED=0"
     if exist "!CODEX_PROFILES_SRC!" (
         for /f %%n in ('dir /b /a-d "!CODEX_PROFILES_SRC!\*.toml" 2^>nul ^| find /c /v ""') do set "CODEX_PROFILES_SYNCED=%%n"
-        powershell -NoProfile -Command "$start=$env:CODEX_PROFILE_START; $end=$env:CODEX_PROFILE_END; $srcDir=$env:CODEX_PROFILES_SRC; $dstPath=$env:CODEX_CONFIG_DST; $existing=if(Test-Path $dstPath){[IO.File]::ReadAllText($dstPath)} else {''}; $pattern='(?s)\r?\n?'+[regex]::Escape($start)+'.*?'+[regex]::Escape($end)+'\r?\n?'; $clean=[regex]::Replace($existing,$pattern,''); $parts=Get-ChildItem -Path $srcDir -Filter '*.toml' ^| Sort-Object Name ^| ForEach-Object { [IO.File]::ReadAllText($_.FullName).TrimEnd() }; $body='# Managed Codex profiles from cc-use-exp'+[Environment]::NewLine+'# Use with: codex -p ^<profile-name^>'+[Environment]::NewLine+[Environment]::NewLine+($parts -join ([Environment]::NewLine+[Environment]::NewLine)); $clean=$clean.TrimEnd(); if($clean.Length -gt 0){$clean += [Environment]::NewLine + [Environment]::NewLine}; $content=$clean + $start + [Environment]::NewLine + $body.TrimEnd() + [Environment]::NewLine + $end + [Environment]::NewLine; [IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($dstPath)) ^| Out-Null; [IO.File]::WriteAllText($dstPath,$content,[Text.UTF8Encoding]::new($false))" >nul
+        powershell -NoProfile -Command "$srcDir=$env:CODEX_PROFILES_SRC; $dstDir=Join-Path $env:HOME_DIR '.codex'; $manifest=$env:CODEX_PROFILES_MANIFEST; $old=@(); if(Test-Path $manifest){$old=Get-Content $manifest}; $new=@(); Get-ChildItem -Path $srcDir -Filter '*.toml' ^| Sort-Object Name ^| ForEach-Object { $name=$_.BaseName; if($name -notmatch '^[A-Za-z0-9_-]+$'){throw 'Invalid Codex profile name: '+$name}; if(Select-String -Path $_.FullName -Pattern '^\s*\[profiles\.' -Quiet){throw 'Legacy [profiles.*] table in '+$_.FullName}; $target=$name+'.config.toml'; Copy-Item $_.FullName (Join-Path $dstDir $target) -Force; $new += $target }; foreach($item in $old){ if($item -and ($new -notcontains $item)){ Remove-Item (Join-Path $dstDir $item) -Force -ErrorAction SilentlyContinue } }; Set-Content -Path $manifest -Value $new -Encoding utf8; $config=$env:CODEX_CONFIG_DST; if(Test-Path $config){ $start=$env:CODEX_PROFILE_START; $end=$env:CODEX_PROFILE_END; $text=[IO.File]::ReadAllText($config); $pattern='(?s)\r?\n?'+[regex]::Escape($start)+'.*?'+[regex]::Escape($end)+'\r?\n?'; $text=[regex]::Replace($text,$pattern,''); [IO.File]::WriteAllText($config,$text,[Text.UTF8Encoding]::new($false)) }" >nul
         if errorlevel 1 (
             echo   警告: profiles 同步失败，请检查 powershell 是否可用
         ) else (
-            echo   [√] profiles: !CODEX_PROFILES_SYNCED! 个，已合并到 ~/.codex/config.toml
+            echo   [√] profiles: !CODEX_PROFILES_SYNCED! 个，同步到 ~/.codex/*.config.toml
         )
     ) else (
         echo   未找到 profiles\，跳过 profile 同步
@@ -277,6 +292,8 @@ if exist "%SCRIPT_DIR%\.codex" (
     echo   [√] rules: !CODEX_RULES_SYNCED! 个，同步到 ~/.codex/rules/
     echo   [√] instructions: !CODEX_INSTRUCTIONS_SYNCED! 个，同步到 ~/.codex/instructions/
     echo   [√] skills: !CODEX_SKILLS_SYNCED! 个，同步到 ~/.agents/skills/
+    echo   [√] templates/tasks 目录骨架已同步到 ~/.codex/
+    echo   [√] 项目 .codex 骨架模板已同步到 ~/.codex/project-template/
     echo   已保留 ~/.codex 运行态文件（auth/history/logs/cache）
 ) else (
     echo [Codex] 源目录不存在，跳过

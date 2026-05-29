@@ -1,6 +1,4 @@
 # 日常主力 profile：在质量和速度之间折中。
-[profiles."cc-balanced"]
-model = "gpt-5.3-codex"
-review_model = "gpt-5.3-codex"
+model = "gpt-5.5"
+review_model = "gpt-5.5"
 model_reasoning_effort = "medium"
-

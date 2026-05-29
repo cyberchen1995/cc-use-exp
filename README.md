@@ -179,7 +179,7 @@ tools\sync-config.bat
 - `.codex/global/rules/` → `~/.codex/rules/`
 - `.codex/instructions/*.md` → `~/.codex/instructions/`
 - `.codex/skills/` → `~/.agents/skills/`
-- `.codex/profiles/*.toml` → `~/.codex/config.toml`（受管区块合并）
+- `.codex/profiles/*.toml` → `~/.codex/{profile}.config.toml`
 - `.cursor/rules/*.mdc` → `~/.cursor/rules/`（兼容性同步，项目内 `.cursor/rules/` 仍是主路径）
 - `.cursor/skills/*` → `~/.cursor/skills/`
 - `.cursor/commands/*.md` → `~/.cursor/skills/{name}/SKILL.md`（命令式技能兼容层）
@@ -192,13 +192,13 @@ tools\sync-config.bat
 
 - 不会整体覆盖 `~/.codex/`
 - 不会动 `auth.json`、`history.jsonl`、日志、sqlite、cache 等运行态文件
-- 只维护当前项目负责的 `AGENTS` 受管区块、受管 profiles、`rules`、`instructions` 和 `skills`
+- 只维护当前项目负责的 `AGENTS` 受管区块、受管 profile 文件、`rules`、`instructions` 和 `skills`
 
 各工具的部署特性：
 
 - **Claude Code**：同步到 `~/.claude/`，并保留历史对话记录和个人配置
 - **Gemini CLI**：同步到 `~/.gemini/`，并保留认证信息（如 `oauth_creds.json`）和运行时数据
-- **Codex**：对 `~/.codex/AGENTS.md` 和 `~/.codex/config.toml` 使用受管区块合并；增量管理 `~/.codex/rules/`、`~/.codex/instructions/` 与 `~/.agents/skills/` 下当前项目同步出去的受管内容；不改用户已有默认模型、provider 或 `base_url`
+- **Codex**：对 `~/.codex/AGENTS.md` 使用受管区块合并；增量管理 `~/.codex/rules/`、`~/.codex/instructions/`、`~/.codex/{profile}.config.toml` 与 `~/.agents/skills/` 下当前项目同步出去的受管内容；不改用户已有默认模型、provider 或 `base_url`
 - **Cursor**：项目内 `.cursor/rules/` 仍是主路径；脚本会把 skills、templates 和命令式技能兼容层同步到用户级目录，并将 `.cursor/rules/*.mdc` 兼容性同步到 `~/.cursor/rules/`；保留 `~/.cursor` 下的 settings、extensions、cache 等运行态文件
 
 ---
@@ -469,7 +469,7 @@ GEMINI.md 自动加载，提供以下保护：
 <img src="pic/cli-codex-cli.svg" alt="Codex CLI 加载机制 + cc-use-exp 介入链路" width="100%" style="max-width: 1000px" />
 </div>
 
-> 上图展示从 `codex -p cc-balanced` 启动到 GPT-5.3-Codex 输出的完整链路：① `AGENTS.md` 链按 root → cwd 顺序合并（max 32 KiB），cc-use-exp 通过受管区块写入 `~/.codex/AGENTS.md` 与 `~/.codex/config.toml`，不动用户 auth/history；② Skills 渐进式披露（初始列表 ≤ 2% 上下文，命中后加载完整 SKILL.md）；③ Workflow Skills 通过 `$` 前缀显式触发，任务持久化到 `.codex/tasks/`。
+> 上图展示从 `codex --profile cc-balanced` 启动到 GPT-5.5 输出的完整链路：① `AGENTS.md` 链按 root → cwd 顺序合并，cc-use-exp 通过受管区块写入 `~/.codex/AGENTS.md`，并同步独立 profile 文件到 `~/.codex/{profile}.config.toml`，不动用户 auth/history；② Skills 渐进式披露（初始列表 ≤ 2% 上下文，命中后加载完整 SKILL.md）；③ Workflow Skills 通过 `$` 前缀显式触发，任务持久化到 `.codex/tasks/`。
 
 ---
 
@@ -528,7 +528,7 @@ bash <(curl -sL https://raw.githubusercontent.com/doccker/cc-use-exp/main/tools/
 - `$cc-new-feature` 用于完整功能开发与任务推进
 - `$cc-task-state` 用于沉淀“还没开始 / 被打断 / 待恢复”的任务状态，避免进展只留在对话里
 
-使用 `codex -p cc-custom-instructions`
+使用 `codex --profile cc-custom-instructions`
 ![Chrome 插件独立配置界面（可指定自定义模型）](./pic/codex-unlock.png)
 
 ### 大陆网络下 `gpt` 频繁 `reconnecting`

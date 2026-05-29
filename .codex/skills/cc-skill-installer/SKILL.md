@@ -78,7 +78,7 @@ echo ""
 
 if [ -f "./tools/sync-config.sh" ]; then
   # 只执行 Codex 部分的同步
-  ./tools/sync-config.sh
+  CC_USE_EXP_SYNC_TARGETS=codex ./tools/sync-config.sh
 else
   echo "❌ 错误：找不到同步脚本"
   exit 1
@@ -95,7 +95,7 @@ echo "📝 已同步配置到："
 echo "  - ~/.codex/AGENTS.md（受管区块）"
 echo "  - ~/.codex/rules/"
 echo "  - ~/.codex/instructions/"
-echo "  - ~/.codex/config.toml（profiles 受管区块）"
+echo "  - ~/.codex/*.config.toml（profiles）"
 echo "  - ~/.agents/skills/"
 echo ""
 echo "🔄 配置已生效，无需重启"
@@ -138,7 +138,7 @@ fi
 
 - 安装位置：`~/.codex/.cc-use-exp/`
 - 配置同步到：`~/.codex/`、`~/.agents/skills/`
-- 使用受管区块合并，不会覆盖用户自定义配置
+- `AGENTS.md` 使用受管区块合并，profiles 使用独立 `*.config.toml` 文件，不会覆盖用户自定义配置
 - 支持重复安装（自动检测并提示更新）
 
 ---

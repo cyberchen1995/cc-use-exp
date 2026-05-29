@@ -16,8 +16,8 @@ description: 结构化 Codex 配置与任务状态检查工作流，适用于显
 ## 核心方式
 
 1. 同时看项目内 `.codex/` 权威源和用户级 `~/.codex/`、`~/.agents/skills/` 部署产物。
-2. 检查全局入口是否齐全：`AGENTS.md`、`rules/`、`instructions/`、`skills/`、`config.toml` profiles。
-3. 检查 `AGENTS.md` 和 `config.toml` 是否包含受管区块，`rules/`、`instructions/` 与 `skills/` 是否保留 manifest。
+2. 检查全局入口是否齐全：`AGENTS.md`、`rules/`、`instructions/`、`skills/`、`*.config.toml` profiles。
+3. 检查 `AGENTS.md` 是否包含受管区块，`rules/`、`instructions/`、`skills/` 与 profiles 是否保留 manifest。
 4. 检查 `codex` CLI 是否可用，并报告版本。
 5. 若 `codex execpolicy check` 可用，抽样验证当前 rules 的 `allow/prompt/forbidden` 是否符合预期。
 6. 补查当前项目是否具备 `new-feature` 任务持久化前置条件：项目内 `.codex/tasks/`、`.codex/tasks/archived/`、`.codex/templates/` 是否存在。

@@ -81,61 +81,24 @@ echo ""
 echo "🔧 同步配置到 Codex CLI..."
 echo ""
 
-# 执行同步脚本（只同步 Codex 部分）
 if [ -f "./tools/sync-config.sh" ]; then
-    # 提取 Codex 同步逻辑
-    CODEX_DIR="$HOME/.codex"
-    AGENTS_SKILLS_DIR="$HOME/.agents/skills"
-
-    mkdir -p "$CODEX_DIR/rules"
-    mkdir -p "$CODEX_DIR/instructions"
-    mkdir -p "$AGENTS_SKILLS_DIR"
-
-    # 同步 rules
-    if [ -d ".codex/global/rules" ]; then
-        rsync -a .codex/global/rules/ "$CODEX_DIR/rules/"
-        echo "  ✓ rules/"
-    fi
-
-    # 同步 instructions
-    if [ -d ".codex/instructions" ]; then
-        rsync -a .codex/instructions/ "$CODEX_DIR/instructions/"
-        echo "  ✓ instructions/"
-    fi
-
-    # 同步 skills
-    if [ -d ".codex/skills" ]; then
-        rsync -a .codex/skills/ "$AGENTS_SKILLS_DIR/"
-        echo "  ✓ skills/"
-    fi
-
-    # 同步 AGENTS.md（受管区块合并）
-    if [ -f ".codex/global/AGENTS.md" ]; then
-        if [ -f "$CODEX_DIR/AGENTS.md" ]; then
-            # 简单追加（实际应该用受管区块合并）
-            echo "" >> "$CODEX_DIR/AGENTS.md"
-            cat .codex/global/AGENTS.md >> "$CODEX_DIR/AGENTS.md"
-        else
-            cp .codex/global/AGENTS.md "$CODEX_DIR/AGENTS.md"
-        fi
-        echo "  ✓ AGENTS.md"
-    fi
-
-    # 创建 manifest 标记
-    echo "cc-use-exp" > "$CODEX_DIR/rules/.cc-use-exp-managed"
-    echo "cc-use-exp" > "$CODEX_DIR/instructions/.cc-use-exp-managed"
-    echo "cc-use-exp" > "$AGENTS_SKILLS_DIR/.cc-use-exp-managed"
+    CC_USE_EXP_SYNC_TARGETS=codex ./tools/sync-config.sh
 else
     echo "❌ 错误：找不到同步脚本"
     exit 1
 fi
 
+CODEX_DIR="$HOME/.codex"
+AGENTS_SKILLS_DIR="$HOME/.agents/skills"
+
 echo ""
 echo "✅ 安装完成！"
 echo ""
 echo "📝 已同步配置到："
+echo "  - $CODEX_DIR/AGENTS.md"
 echo "  - $CODEX_DIR/rules/"
 echo "  - $CODEX_DIR/instructions/"
+echo "  - $CODEX_DIR/*.config.toml"
 echo "  - $AGENTS_SKILLS_DIR/"
 echo ""
 
@@ -150,6 +113,11 @@ fi
 
 if [ ! -d "$CODEX_DIR/rules" ] || [ -z "$(ls -A "$CODEX_DIR/rules" 2>/dev/null)" ]; then
     echo "  ⚠️  rules/ 目录为空"
+    verify_success=false
+fi
+
+if [ ! -f "$CODEX_DIR/cc-balanced.config.toml" ]; then
+    echo "  ⚠️  cc-balanced profile 未同步"
     verify_success=false
 fi
 
