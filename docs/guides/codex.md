@@ -2,23 +2,23 @@
 
 如果在使用过程中遇到 `gpt-5.5` 会话频繁 `reconnecting`、连接超时，或安装/执行扩展明显卡顿，这通常是网络原因导致。
 
-本项目提供了一份可直接参考的代理配置模板 `.codex/.env`。
+本项目提供了一份可直接参考的代理配置模板 `.codex/.env.example`。实际生效文件使用 `.codex/.env`，该文件只在本地维护，不提交到 GitHub。
 
 **使用方法**：
 1. 打开项目内模板文件：
    ```bash
-   cat .codex/.env
+   cat .codex/.env.example
    ```
 2. 按你本地代理客户端（如 Clash Verge）的实际端口修改文件内容：
    ```env
-   HTTP_PROXY="http://127.0.0.1:你的端口"
-   HTTPS_PROXY="http://127.0.0.1:你的端口"
-   NO_PROXY="localhost,127.0.0.1"
+   HTTP_PROXY=http://127.0.0.1:你的端口
+   HTTPS_PROXY=http://127.0.0.1:你的端口
+   NO_PROXY=localhost,127.0.0.1,.npmmirror.com
    ```
 3. 选择生效范围：
+   - 复制 `.codex/.env.example` 为 `.codex/.env`：只对当前项目生效
    - 复制到 `~/.codex/.env`：让其他项目也复用这份全局代理配置
-   - 保留在当前项目的 `.codex/.env`：只对当前项目生效
-4. 注意同步边界：`tools/sync-config.sh` 不会自动把该文件同步到 `~/.codex/.env`，避免覆盖你本机已有代理配置。
+4. 注意同步边界：`tools/sync-config.sh` 不会自动把该模板同步到 `~/.codex/.env`，避免覆盖你本机已有代理配置。
 
 ---
 

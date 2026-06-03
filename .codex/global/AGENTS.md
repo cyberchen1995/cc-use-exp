@@ -21,6 +21,7 @@
 - 将错误行为、类型问题、缺失校验、缺失错误处理、明显回归视为真实问题。
 - 将接口输入输出契约漂移（成功响应包装、分页结构、枚举或筛选项结构不一致）视为真实问题，不默认以前端兼容长期掩盖。
 - 不通过修改测试来掩盖错误实现。
+- 不通过开启全局放行开关来掩盖错误（如 `spring.main.allow-bean-definition-overriding=true`、`tsconfig.skipLibCheck`、`-DskipTests`、`/* eslint-disable */`、`warnings.filterwarnings('ignore')`、`// @ts-nocheck` 整文件）。启用任何 `allow-*` / `ignore-*` / `skip-*` / `disable-*` 配置前，必须先说明"这个开关会掩盖什么类型的错误"。临时单行绕过可接受（带 TODO）；改全局配置应优先驳回。
 - 改动后做受影响范围内最小但有意义的验证。
 - 单文件行数硬限制：Java ≤ 300、Go ≤ 400、Vue/TSX/JSX ≤ 200、TS/JS ≤ 300、Python ≤ 300（排除空行和纯注释行）。新建文件预估超限则提前拆分；修改现有文件导致超限时，将新增部分拆到新文件。项目 AGENTS.md 可用 `## 文件行数限制` 章节覆盖默认值。
 

@@ -361,7 +361,7 @@ tools\sync-config.bat
 
 - **设计技能**：`code-quality-principles`
 - **语言技能**：`go-dev`、`java-dev`、`frontend-dev`、`python-dev`、`rust-dev`
-- **安全技能**：`ops-safety`、`redis-safety`、`api-design-safety`、`api-contract-safety`、`storage-url-safety`、`query-performance-safety`、`async-task-pattern`、`time-zone-safety`
+- **安全技能**：`ops-safety`、`redis-safety`、`api-design-safety`、`api-contract-safety`、`storage-url-safety`、`query-performance-safety`、`streaming-export-safety`、`async-task-pattern`、`time-zone-safety`
 - **重构技能**：`refactor-safety`、`field-mapping-safety`
 - **工具技能**：`bash-style`、`size-check`
 
@@ -437,7 +437,7 @@ GEMINI.md 自动加载，提供以下保护：
 - **前端技能**：`frontend-safety`（数据绑定保护、布局一致性）
 - **设计技能**：`code-quality-principles`
 - **语言技能**：`go-dev`、`java-dev`、`python-dev`、`rust-dev`
-- **安全技能**：`ops-safety`、`api-design-safety`、`api-contract-safety`、`storage-url-safety`、`query-performance-safety`、`async-task-pattern`、`time-zone-safety`
+- **安全技能**：`ops-safety`、`api-design-safety`、`api-contract-safety`、`storage-url-safety`、`query-performance-safety`、`streaming-export-safety`、`async-task-pattern`、`time-zone-safety`
 - **工具技能**：`bash-style`
 
 ### 中费力（显式调用）- Commands
@@ -505,9 +505,11 @@ bash <(curl -sL https://raw.githubusercontent.com/doccker/cc-use-exp/main/tools/
 
 - **设计技能**：`code-quality-principles`
 - **语言技能**：`go-dev`、`java-dev`、`frontend-dev`、`python-dev`、`rust-dev`
-- **安全技能**：`ops-safety`、`redis-safety`、`api-design-safety`、`api-contract-safety`、`storage-url-safety`、`query-performance-safety`、`async-task-pattern`、`time-zone-safety`
+- **安全技能**：`ops-safety`、`redis-safety`、`api-design-safety`、`api-contract-safety`、`storage-url-safety`、`query-performance-safety`、`streaming-export-safety`、`async-task-pattern`、`time-zone-safety`
 - **重构技能**：`refactor-safety`、`field-mapping-safety`
 - **工具技能**：`bash-style`、`size-check`
+
+其中 `streaming-export-safety` 仅面向用户驱动的大文件导出与批量序列化（Excel/CSV/JSON/JSONL/PDF），普通小文件下载、静态资源转发和非导出类的 `Writer` / `Report` 命名不触发。
 
 ### 中费力（显式调用）- Workflow Skills
 
@@ -535,22 +537,24 @@ bash <(curl -sL https://raw.githubusercontent.com/doccker/cc-use-exp/main/tools/
 
 如果你在大陆网络环境下使用 Codex，并且在 `gpt` 会话里频繁看到 `reconnecting`，可以先尝试为 Codex 增加代理环境变量。
 
-仓库已提供可直接参考的模板文件：[`.codex/.env`](./.codex/.env)
+仓库已提供可直接参考的模板文件：[`.codex/.env.example`](./.codex/.env.example)。实际生效文件使用 `.codex/.env`，该文件只在本地维护，不提交到 GitHub。
 
 ```env
-HTTP_PROXY="http://127.0.0.1:7897"
-HTTPS_PROXY="http://127.0.0.1:7897"
-NO_PROXY="localhost,127.0.0.1"
+HTTP_PROXY=http://127.0.0.1:YOUR_PORT
+HTTPS_PROXY=http://127.0.0.1:YOUR_PORT
+NO_PROXY=localhost,127.0.0.1,.npmmirror.com
 ```
 
 使用方式：
 
-- 按你的本地代理实际端口修改 `127.0.0.1:7897`
+- 复制 `.codex/.env.example` 为 `.codex/.env`
+- 按你的本地代理实际端口修改 `YOUR_PORT`
 - 复制到 `~/.codex/.env`，让其他项目也能复用这份全局配置
 - 如果你只想对单个项目生效，也可以放到该项目的 `.codex/.env`
 
 > **说明**：
-> - 这份 `.env` 是模板，不会被 `tools/sync-config.sh` 自动同步到 `~/.codex/.env`
+> - `.codex/.env.example` 是可提交模板，`.codex/.env` 是本地实际配置并已加入 `.gitignore`
+> - 这份模板不会被 `tools/sync-config.sh` 自动同步到 `~/.codex/.env`
 > - 这样做是为了避免覆盖用户已有的机器本地代理配置
 > - 该方案来自实际使用验证，适合先作为网络层排查手段
 
@@ -591,7 +595,7 @@ Cursor Agent 根据 `description` 语义匹配，自动加载对应技能：
 
 - **设计技能**：`code-quality-principles`
 - **语言技能**：`go-dev`、`java-dev`、`frontend-dev`、`python-dev`、`rust-dev`
-- **安全技能**：`ops-safety`、`redis-safety`、`api-design-safety`、`api-contract-safety`、`storage-url-safety`、`query-performance-safety`、`async-task-pattern`、`time-zone-safety`
+- **安全技能**：`ops-safety`、`redis-safety`、`api-design-safety`、`api-contract-safety`、`storage-url-safety`、`query-performance-safety`、`streaming-export-safety`、`async-task-pattern`、`time-zone-safety`
 - **重构技能**：`refactor-safety`、`field-mapping-safety`
 - **工具技能**：`bash-style`、`size-check`、`ruanzhu`、`ui-ux-pro-max`
 

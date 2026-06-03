@@ -16,14 +16,26 @@ out/
 publish.sh
 
 .claude/tasks/
-.gemini/GEMINI.local.md
-.claude/CLAUDE.local.md
 /AGENTS.md
+
+
+/CLAUDE.local.md
+/AGENTS.override.md
+.codex/global/AGENTS.override.md
+.gemini/GEMINI.local.md
+
+.claude/templates/CLAUDE.local.md.template
+.gemini/templates/GEMINI.local.md.template
+.codex/templates/AGENTS.override.md.template
 
 # Gemini CLI local environment configuration
 .gemini/.env
+
+# Codex local environment configuration
+.codex/.env
 
 # Cursor runtime files
 .cursor/mcp.json
 
 .codex/tasks/
+.gemini/tasks/

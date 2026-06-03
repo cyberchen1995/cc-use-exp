@@ -69,6 +69,36 @@ alwaysApply: true
 - ❌ "Generated with AI" 或类似标记
 - ❌ AI 生成声明、作者署名、自动时间戳
 
+### 8. 用"全局开关"掩盖错误（最隐蔽）
+
+**症状**：报错出现 → 反应是去 `application.properties` / `tsconfig` / `build.gradle`
+开一个全局放行开关让报错消失，而不是修根因。
+
+**典型反模式**：
+
+| 语言/框架 | 错误开关 | 真正应该做的 |
+|----------|---------|------------|
+| Spring Boot | `spring.main.allow-bean-definition-overriding=true` | 找重名 Bean，改 name 或拆 Bean |
+| Spring Boot | `spring.main.allow-circular-references=true` | 找循环依赖根因，拆 Service / `@Lazy` |
+| TypeScript | `skipLibCheck` / `noImplicitAny:false` / `strict:false` | 修类型错误 / 补 `.d.ts` |
+| TypeScript | `// @ts-ignore` / `// @ts-nocheck` 整文件 | 针对单行修正类型 |
+| Maven | `-Dmaven.test.skip` / `-DskipTests` | 修失败的测试 |
+| Gradle | 禁用 Test 任务 | 修失败的测试 |
+| Go build | `// +build ignore` 全文件忽略 | 拆出有问题的代码 |
+| Python | `warnings.filterwarnings('ignore')` 全局 | 针对单个 warning 处理 |
+| Webpack/Vite | `transpileOnly: true` | 修类型，不要绕过 |
+| ESLint | 文件顶 `/* eslint-disable */` | 针对单条规则 disable |
+| Hibernate | `hbm2ddl.auto=update` 掩盖 schema 漂移 | 用迁移工具（Flyway/Liquibase） |
+
+**判定原则**：
+- 启用任何 `allow-*` / `ignore-*` / `skip-*` / `disable-*` 配置前，必须先输出
+  "**这个开关会掩盖什么类型的错误？**"，得到答案后再决定
+- 临时绕过单行可接受（必须带 TODO 和 issue 链接）；改全局配置直接驳回
+- 每个掩盖式开关都意味着"以后还会有相同根因的 bug"
+
+**与第 1 条「测试篡改」的关系**：本条是"配置层"的测试篡改 ——
+不改测试断言，但改运行时让错误不抛出来，本质一样。
+
 ---
 
 ## 必须遵循

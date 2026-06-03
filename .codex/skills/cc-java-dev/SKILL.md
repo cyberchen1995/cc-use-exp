@@ -441,49 +441,134 @@ log.debug("Finding user by id: " + userId);
 
 ## Spring Bean 命名冲突
 
-**场景**: 不同包下创建了同名 Controller/Service 类，导致 Spring 启动时 Bean 注册冲突
+**场景**：Spring 启动时 `BeanDefinitionStoreException`，或 "no qualifying bean
+of type X found" 看似找不到 Bean。
 
 ### 问题根因
 
-Spring 默认按类名首字母小写生成 bean name。如果两个类名相同但在不同包下，默认 bean name 会冲突，导致 `BeanDefinitionStoreException`。
+Spring 默认按类名首字母小写生成 bean name。冲突有两类：
 
-### 错误示例
+- **子场景 A：同名同类型** —— 两个 `@Service`/`@Controller` 类同名（不同包）
+- **子场景 B：同名异类型** —— `@Bean(name=X)` 注册的对象与 `@Component`/`@Service`
+  类的默认 bean name 撞车 ⚠️ 更隐蔽
+
+### 子场景 A：两个同名 Controller / Service
 
 ```java
-// ❌ 错误: 两个包下同名类
+// ❌ 两个包下同名类，bean name 都是 miniAppConfigController
 // com.trade.controller.MiniAppConfigController
 @RestController
-@RequestMapping("/mini-app-config")
 public class MiniAppConfigController { }
 
 // com.trade.controller.mini.MiniAppConfigController
 @RestController
-@RequestMapping("/mini/config")
 public class MiniAppConfigController { }
-
-// 启动报错: BeanDefinitionStoreException
-// 两个类的默认 bean name 都是 miniAppConfigController
+// → 启动报 BeanDefinitionStoreException
 ```
 
-### 正确做法
+**修复**：
 
 ```java
-// ✅ 方案1: 使用不同类名（推荐）
+// ✅ 方案1: 改类名（推荐）
 @RestController
-@RequestMapping("/mini/config")
-public class MiniPublicConfigController { }  // 改名避免冲突
+public class MiniPublicConfigController { }
 
 // ✅ 方案2: 显式指定 bean name
 @RestController("miniPublicConfigController")
-@RequestMapping("/mini/config")
 public class MiniAppConfigController { }
+```
+
+### 子场景 B：`@Bean` 与 `@Service` 异类型同名 ⚠️
+
+最坑的一种 —— 错误信息可能表现为"找不到 Bean"，根因却是命名覆盖。
+
+```java
+// ❌ AsyncConfig 注册线程池
+@Configuration
+public class AsyncConfig {
+    @Bean(name = "priceBatchUpdateExecutor")  // 名字和下面那个 Service 冲突
+    public Executor priceBatchUpdateExecutor() { ... }
+}
+
+// ❌ 同时 @Service 类的默认 bean name 就是 priceBatchUpdateExecutor
+@Service
+public class PriceBatchUpdateExecutor { ... }
+
+// ❌ 业务代码注入
+@RequiredArgsConstructor
+public class PriceBatchUpdateService {
+    private final PriceBatchUpdateExecutor priceBatchUpdateExecutor;
+    // 启动时报: no qualifying bean of type PriceBatchUpdateExecutor
+}
+```
+
+**两种后果，都很糟**：
+
+| 状态 | 表现 | 误诊概率 |
+|------|------|---------|
+| 未开 overriding | `BeanDefinitionStoreException`，定位明确 | 低 |
+| 开了 overriding | 线程池 Bean 覆盖 Service Bean → 注入 `PriceBatchUpdateExecutor` 时找到的是 `Executor` 类型 → 报 `no qualifying bean of type`，根因被掩盖 | **高，常排查几小时** |
+
+**绝对不要这样修**：
+
+```properties
+# ❌ AI 反射式开全局开关，掩盖问题
+spring.main.allow-bean-definition-overriding=true
+```
+
+> 详见 `.codex/global/AGENTS.md` 的质量要求：不要通过开启全局放行开关来掩盖错误。
+
+**正确修复**：
+
+```java
+// ✅ 区分语义：线程池叫 ThreadPool / TaskExecutor，业务类保持类名
+@Bean(name = "priceBatchUpdateThreadPool")
+public Executor priceBatchUpdateThreadPool() { ... }
+
+@Service
+public class PriceBatchUpdateExecutor { ... }  // 业务类不动
+
+// 调用方同步改 @Qualifier
+@RequiredArgsConstructor
+public class PriceBatchUpdateTaskScheduler {
+    @Qualifier("priceBatchUpdateThreadPool")
+    private final Executor threadPool;
+    private final PriceBatchUpdateExecutor executor;  // 注入业务 Bean
+}
+```
+
+### Bean 命名约定（避免冲突）
+
+| 类型 | 后缀 / 命名约定 |
+|------|---------------|
+| 业务服务 | `XxxService` / `XxxManager` / `XxxExecutor`（如果"执行器"是业务概念） |
+| 线程池 Bean | `XxxThreadPool` / `XxxTaskExecutor` |
+| 配置 Bean | `XxxConfig` / `XxxProperties` |
+| 数据源 Bean | `XxxDataSource` / `XxxJdbcTemplate` |
+| HTTP 客户端 | `XxxRestTemplate` / `XxxHttpClient` |
+| MQ Bean | `XxxListenerContainer` / `XxxTemplate` |
+
+**铁律**：`@Bean(name=)` 的命名不要和任何 `@Component`/`@Service`/`@Controller`/`@Repository`
+类的默认 Bean name 撞车。
+
+### 排查命令
+
+```bash
+# 在项目里搜索是否有重名
+rg '@Bean\(name = "priceBatchUpdateExecutor"' src/
+rg 'class PriceBatchUpdateExecutor' src/
+
+# 启动时打开 DEBUG 看 Bean 注册
+# logging.level.org.springframework.beans.factory=DEBUG
 ```
 
 ### 检查清单
 
-- [ ] 新增 Controller/Service 时，是否检查了项目中是否已有同名类
+- [ ] 新增 Controller/Service 时，是否检查项目中是否已有同名类
+- [ ] 新增 `@Bean(name=X)` 时，是否检查 `class X` 是否存在
 - [ ] 不同包下的同名类是否使用了不同的类名或显式 bean name
-- [ ] 启动报 `BeanDefinitionStoreException` 时，是否优先排查同名 bean
+- [ ] 启动报 `BeanDefinitionStoreException` 或 `no qualifying bean of type` 时，**优先排查同名 Bean**
+- [ ] 临时启用 `allow-bean-definition-overriding=true` 后，是否在根因修复后**及时移除**（绝大多数情况不应启用）
 
 ---
 

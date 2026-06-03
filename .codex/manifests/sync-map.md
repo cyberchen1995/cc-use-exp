@@ -16,7 +16,8 @@
 ## 不同步内容
 
 - `.codex/manifests/`
-- `.codex/.env`（仅作为可选代理模板，避免自动覆盖用户本地 `~/.codex/.env`）
+- `.codex/.env`（本地实际代理配置，已加入 `.gitignore`）
+- `.codex/.env.example`（仅作为可选代理模板，避免自动覆盖用户本地 `~/.codex/.env`）
 
 ## 特殊同步说明
 
