@@ -68,6 +68,8 @@ bash <(curl -sL https://raw.githubusercontent.com/doccker/cc-use-exp/main/tools/
 | Instructions | `~/.codex/instructions/` | 供 profile 通过 `model_instructions_file` 引用 |
 | Skills | `~/.agents/skills/` | 渐进式披露，按需加载 |
 
+说明：项目内 `.codex/skills/` 是 cc-use-exp 的权威维护源；同步后落到 `~/.agents/skills/`，由 Codex 按官方 skill 发现机制加载。
+
 同时还会生成一个“其他项目可复用的项目骨架”：
 
 | 类型 | 用户级落点 | 作用 |
@@ -204,6 +206,7 @@ cp -R ~/.codex/project-template/.codex/templates ./.codex/
 | `cc-ops-safety` | 系统命令、容器、部署、数据库操作 | 风险说明、回滚方案、影响面控制 |
 | `cc-api-design-safety` | 设计或修改 REST API 响应结构 | 防止泛型重载歧义、响应字段语义混淆 |
 | `cc-storage-url-safety` | 使用 MinIO/OSS/S3 等对象存储 | URL 策略选择、Bucket 配置、安全性检查 |
+| `cc-external-system-debugging` | 浏览器、编辑器、CDN/WAF、剪贴板、IM 平台、第三方 SaaS 等外部系统异常 | 先抓真实环境数据，再基于证据推理 |
 
 **效果示例**：
 - 写 Go、Java、Python 或前端代码时，会自动带上对应语言规范
@@ -302,12 +305,12 @@ Codex 配置按多层拆分：
 | 常驻最小层 | `.codex/global/AGENTS.md` | 只保留跨项目都成立的总纲 |
 | 审批控制层 | `.codex/global/rules/` | 只放允许/提示/禁止执行的命令规则 |
 | 说明文件层 | `.codex/instructions/*.md` | 供 profile 通过 `model_instructions_file` 引用的说明文件 |
-| 主规范层 | `.codex/skills/` | 绝大多数规范通过 skills 按需加载 |
+| 主规范层 | `.codex/skills/` → `~/.agents/skills/` | 项目内维护权威源，同步后由 Codex 按需加载 |
 | 模式切换层 | `.codex/profiles/*.toml` → `~/.codex/{profile}.config.toml` | 以具名 profile 提供 fast / balanced / deep 模式，不改用户默认值 |
 
 skills 又分为两类：
 
-- **隐式技能**：如 `cc-core-defensive`、`cc-go-dev`、`cc-frontend-dev`，普通编码场景可自动命中
+- **隐式技能**：如 `cc-core-defensive`、`cc-go-dev`、`cc-frontend-dev`、`cc-external-system-debugging`，普通编码或外部黑盒调试场景可自动命中
 - **显式 workflow skills**：目录仍保留 `cc-*` 前缀，但显式调用名尽量使用短名，如 `fix`、`design`、`requirement`、`size-check`、`commit-msg`、`optimize`、`new-feature`、`project-init`、`project-scan`；`review` 和 `status` 暂保留 `cc-*` 以避免与 Codex 内置命令混淆
 
 新增的显式 workflow skills 主要覆盖：

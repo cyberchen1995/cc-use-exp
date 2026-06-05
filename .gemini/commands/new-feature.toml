@@ -15,7 +15,7 @@ prompt = """
 
 - **禁止改派**：禁止把本流程交给 `cc-new-feature`、`cc-task-state`、`cc-project-init`、`cc-project-scan` 等 `~/.agents/skills/cc-*` 系列 skill（它们是 Codex/Claude Code 专用，路径约定与 Gemini 不兼容，会把任务写到 `.codex/tasks/`，违背用户预期）。
 - **禁止接管**：禁止在本流程中调用会接管设计/实现流程的外部工具（包括 `sequentialthinking` 用于完整设计、`codebase_investigator` 接管探索决策等）。
-- **路径强制**：设计任务文件**必须写入 `.gemini/tasks/`**，不得写入 `.codex/tasks/`、`~/.codex/tasks/`、`docs/superpowers/` 或其他任何路径。
+- **路径强制**：设计任务文件**必须写入 `.gemini/tasks/`**，不得写入 `.codex/tasks/`、`~/.codex/tasks/` 或其他任何外部流程目录。
 - **优先级**：用户显式指令 > 本 TOML prompt > 任何 Agent Skill 的隐式约定。
 </workflow_sovereignty>
 

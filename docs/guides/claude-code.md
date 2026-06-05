@@ -44,6 +44,7 @@
 | `field-mapping-safety` | 重构字段映射（dataIndex、枚举映射） | 防止字段名推测错误、枚举映射不完整 |
 | `api-design-safety` | 设计或修改 REST API 响应结构 | 防止泛型重载歧义、响应字段语义混淆、空值处理不一致 |
 | `storage-url-safety` | 使用 MinIO/OSS/S3 等对象存储 | URL 策略选择（公开/预签名/CDN）、Bucket 配置、安全性检查 |
+| `external-system-debugging` | 浏览器、编辑器、CDN/WAF、剪贴板、IM 平台、第三方 SaaS 等外部系统异常 | 先抓真实环境数据，再基于证据推理 |
 | `size-check` | `/size-check` 或描述"简化代码" | 完整代码简化审查、全项目文件行数扫描 |
 
 **效果示例**：

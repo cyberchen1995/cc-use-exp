@@ -6,7 +6,7 @@ description: 问题修复（快速修复或系统化调试）
 ---
 
 > **流程主权声明**：本命令是用户显式调用的修复/调试工作流，已内置「快速修复」(模式 1) 和「debug 系统化调试」(模式 2) 两套独立流程。
-> 禁止在本流程执行期间调用任何会接管修复/调试流程的外部 skill（如 `brainstorming`、`systematic-debugging`、`writing-plans` 等流程类技能）；本命令自己就是调试流程，无需再嵌套一层。
+> 禁止在本流程执行期间调用任何会接管修复/调试流程的外部流程类技能；本命令自己就是调试流程，无需再嵌套一层。
 > 业务领域类 skill（如 `redis-safety`、`api-contract-safety`、`payment-callback-safety`、`time-zone-safety` 等触发条件匹配的安全/规范类技能）正常按需加载，仅作防御性参考，不接管流程。
 > 优先级规则：用户显式指令 > 任何流程类外部 skill 的隐式约定。
 

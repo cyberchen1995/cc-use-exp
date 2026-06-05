@@ -9,7 +9,7 @@
 #   ./tools/sync-skill.sh --force            # 覆盖已存在的 skill
 #
 # Codex 长模板保护：
-#   sync_to_codex 默认生成短模板（name + description + implicit: true），
+#   sync_to_codex 默认生成短模板（interface + policy.allow_implicit_invocation: true），
 #   适用于 safety / dev 类隐式触发 skill。
 #   若目标 .codex/skills/cc-*/agents/openai.yaml 已存在且含 default_prompt
 #   （workflow 类显式触发 skill，如 cc-commit-msg、cc-fix 等），
@@ -114,6 +114,30 @@ should_sync() {
     return 0
 }
 
+normalize_non_claude_skill_text() {
+    local target_path="$1"
+
+    if [[ -d "${target_path}" ]]; then
+        find "${target_path}" -type f \( -name '*.md' -o -name '*.toml' -o -name '*.yaml' \) -print0 \
+            | xargs -0 sed -i.bak \
+                -e "s/\`superpowers:systematic-debugging\`/通用系统化调试流程/g" \
+                -e "s/\`superpowers:brainstorming\`/通用头脑风暴流程/g" \
+                -e "s/\`superpowers:writing-plans\`/通用计划编写流程/g" \
+                -e "s/superpowers 自身的优先级规则/用户显式指令优先原则/g" \
+                -e "s/走通用 systematic-debugging/走通用系统化调试流程/g"
+        find "${target_path}" -type f -name '*.bak' -delete
+    elif [[ -f "${target_path}" ]]; then
+        sed -i.bak \
+            -e "s/\`superpowers:systematic-debugging\`/通用系统化调试流程/g" \
+            -e "s/\`superpowers:brainstorming\`/通用头脑风暴流程/g" \
+            -e "s/\`superpowers:writing-plans\`/通用计划编写流程/g" \
+            -e "s/superpowers 自身的优先级规则/用户显式指令优先原则/g" \
+            -e "s/走通用 systematic-debugging/走通用系统化调试流程/g" \
+            "${target_path}"
+        rm -f "${target_path}.bak"
+    fi
+}
+
 sync_to_gemini() {
     local skill="$1"
     local src="${SRC_DIR}/${skill}"
@@ -125,6 +149,7 @@ sync_to_gemini() {
     run mkdir -p "${GEMINI_DIR}"
     run rm -rf "${dst}"
     run cp -R "${src}" "${dst}"
+    [[ "${DRY_RUN}" -eq 1 ]] || normalize_non_claude_skill_text "${dst}"
 }
 
 sync_to_cursor() {
@@ -138,6 +163,7 @@ sync_to_cursor() {
     run mkdir -p "${CURSOR_DIR}"
     run rm -rf "${dst}"
     run cp -R "${src}" "${dst}"
+    [[ "${DRY_RUN}" -eq 1 ]] || normalize_non_claude_skill_text "${dst}"
 }
 
 sync_to_codex() {
@@ -186,6 +212,7 @@ sync_to_codex() {
                 -e "s|/${other})|/cc-${other})|g"
     done <<< "${other_skills}"
 
+    normalize_non_claude_skill_text "${dst}"
     find "${dst}" -type f -name '*.bak' -delete
 
     sed -i.bak "s/\`${skill}\`/\`${cc_name}\`/g" "${dst}/SKILL.md"
@@ -198,9 +225,12 @@ sync_to_codex() {
         local desc
         desc="$(awk '/^description:/{sub(/^description: */,""); print; exit}' "${src}/SKILL.md")"
         cat > "${dst}/agents/openai.yaml" <<YAML
-name: ${cc_name}
-description: ${desc}
-implicit: true
+interface:
+  display_name: "${cc_name}"
+  short_description: >-
+    ${desc}
+policy:
+  allow_implicit_invocation: true
 YAML
     fi
 }
@@ -241,6 +271,7 @@ sync_to_copilot() {
         echo ""
         echo "${body}"
     } > "${dst}"
+    normalize_non_claude_skill_text "${dst}"
 }
 
 list_skills_to_sync() {
