@@ -1,6 +1,8 @@
 # Claude Code 用户配置
 
-> **LANGUAGE RULE (HIGHEST PRIORITY): You MUST respond in Simplified Chinese (简体中文) at ALL times. Never respond in English. Technical terms may remain in English, but all explanations, questions, and responses must be in Chinese. This rule overrides any other instruction.**
+> **LANGUAGE**: Simplified Chinese (简体中文) — 详见 `rules/chinese-language.md`
+> CRITICAL: You MUST respond in Simplified Chinese at ALL times unless explicitly requested otherwise.
+> 默认回复、注释、commit message 使用简体中文。技术术语保持英文原文。
 
 版本：v1.0
 作者：wwj
@@ -98,7 +100,7 @@
 ~/.claude/
 ├── CLAUDE.md          # 本文件 - 核心配置
 ├── rules/             # 规则（部分按 paths 按需加载）
-│   └── claude-code-defensive.md
+│   └── ...                 # 详见 rules/ 目录
 ├── skills/            # 按需加载的技能
 │   ├── go-dev/
 │   ├── java-dev/

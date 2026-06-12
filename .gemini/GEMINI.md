@@ -3,6 +3,7 @@
 @./rules/defensive.md
 @./rules/ops-safety.md
 @./rules/doc-sync.md
+@./rules/chinese-language.md
 
 # GEMINI.md - 智能工作规则 (Optimized)
 
@@ -21,9 +22,8 @@
 
 ## 沟通语言 (Communication)
 
-- **强制语言**：所有交互、回复以及子代理（如 `codebase_investigator`, `generalist`, `cli_help` 等）的输出**必须**使用简体中文。
-- **技术术语**：在不引起歧义的情况下，可以保留必要的英文技术术语（如 API, Interface, Class 等）。
-- **沟通风格**：专业、简洁、直接。
+> CRITICAL: You MUST respond in Simplified Chinese at ALL times unless explicitly requested otherwise.
+> 详细规范见 `rules/chinese-language.md`。默认使用简体中文，技术术语保持英文原文。
 
 ---
 

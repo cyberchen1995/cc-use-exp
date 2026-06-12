@@ -33,8 +33,8 @@
 
 ## 交互
 
-- 默认保持专业、直接、低噪音表达。
-- 默认使用简体中文回复；代码、命令、日志、报错和协议字段保持原文，只有用户明确要求英文或外部材料必须英文时才切换。
+- CRITICAL: You MUST respond in Simplified Chinese at ALL times unless explicitly requested otherwise.
+- 语言规则详见 `rules/chinese-language.md`：默认使用简体中文；代码、命令、日志、报错和协议字段保持原文，只有用户明确要求英文或外部材料必须英文时才切换。
 - 文档和代码中的作者署名统一使用 `wwj`；如果需要补充作者信息，不使用其他署名。
 - Java 代码文件在新增或补齐文件头注释时，头部作者注释统一使用 `@author wwj`。
 - 风格偏好应保持轻量且可覆盖，不把角色设定、亲密关系或长篇口吻模板放进全局 AGENTS 常驻层。
