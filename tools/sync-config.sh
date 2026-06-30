@@ -546,6 +546,30 @@ except Exception:
     return 0
 }
 
+sync_antigravity_cli() {
+    if [[ ! -d "${SCRIPT_DIR}/.antigravity" ]]; then
+        print_line "${YELLOW}[Antigravity CLI] 源目录不存在，跳过${NC}"
+        return 0
+    fi
+
+    print_line "${GREEN}[Antigravity CLI] 开始同步${NC}"
+
+    # 确保目标目录存在
+    mkdir -p ~/.gemini/config ~/.gemini/config/skills
+
+    # 复制配置
+    cp -r "${SCRIPT_DIR}/.antigravity/skills" ~/.gemini/config/
+    if [[ -d "${SCRIPT_DIR}/.antigravity/rules" ]]; then
+        cp -r "${SCRIPT_DIR}/.antigravity/rules" ~/.gemini/config/
+    fi
+    if [[ -f "${SCRIPT_DIR}/.antigravity/AGENTS.md" ]]; then
+        cp "${SCRIPT_DIR}/.antigravity/AGENTS.md" ~/.gemini/config/AGENTS.md
+    fi
+
+    print_line "${GREEN}  ✓ rules/ skills/ AGENTS.md 同步到 ~/.gemini/config/${NC}"
+    return 0
+}
+
 sync_gemini_cli() {
     if [[ ! -d "${SCRIPT_DIR}/.gemini" ]]; then
         print_line "${YELLOW}[Gemini CLI] 源目录不存在，跳过${NC}"
@@ -887,6 +911,8 @@ sync_cursor() {
 }
 
 run_selected_sync_section "claude" "Claude Code" sync_claude_code
+printf '\n'
+run_selected_sync_section "antigravity" "Antigravity CLI" sync_antigravity_cli
 printf '\n'
 run_selected_sync_section "gemini" "Gemini CLI" sync_gemini_cli
 printf '\n'

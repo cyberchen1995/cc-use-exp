@@ -12,6 +12,7 @@
 [![version](https://img.shields.io/badge/version-1.0.39-blue.svg)](https://github.com/doccker/cc-use-exp)
 [![license](https://img.shields.io/badge/license-PolyForm%20NC-green.svg)](./LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Config-orange.svg)](https://docs.anthropic.com/claude-code)
+[![Antigravity CLI](https://img.shields.io/badge/Antigravity_CLI-Config-red.svg)](https://antigravity.google)
 [![Gemini CLI](https://img.shields.io/badge/Gemini_CLI-Config-purple.svg)](https://github.com/google-gemini/gemini-cli)
 [![Codex](https://img.shields.io/badge/Codex-Config-black.svg)](https://developers.openai.com/codex/)
 [![Cursor](https://img.shields.io/badge/Cursor-Config-blue.svg)](https://www.cursor.com/)
@@ -28,14 +29,14 @@
 
 ## 适合谁
 
-- 同时使用 Claude Code、Gemini CLI、Codex、Cursor、GitHub Copilot 中的一种或多种 CLI/IDE
+- 同时使用 Claude Code、Antigravity CLI、Gemini CLI、Codex、Cursor、GitHub Copilot 中的一种或多种 CLI/IDE
 - 不想在每个 session 里重复交代技术栈、项目结构和编码规范
 - 希望把团队协作方式沉淀成可维护的 rules、skills 和 workflow
 - 想降低 AI 常见翻车和危险操作风险
 
 ## 核心收益
 
-- 一次维护，五套工具分别同步到各自用户级入口
+- 一次维护，六套工具分别同步到各自用户级入口
 - 分层加载（rules 常驻 + skills 按需 + workflow 显式调用），减少常驻上下文负担
 - 内置防御性规则，降低修改测试适配错误、危险命令、过度重构等常见问题
 - 保留你熟悉的 CLI，不强迫切换到新的交互方式
@@ -126,7 +127,7 @@ bash <(curl -sL https://raw.githubusercontent.com/doccker/cc-use-exp/main/tools/
 > - 方式 1 需要在 Codex 会话中执行，适合已经在使用 Codex 的用户
 > - 方式 2 可以在任何终端执行，无需进入 Codex 会话
 
-#### Gemini CLI
+#### Antigravity CLI / Gemini CLI
 
 在终端执行：
 ```bash
@@ -134,6 +135,8 @@ bash <(curl -sL https://raw.githubusercontent.com/doccker/cc-use-exp/main/tools/
 ```
 
 更新配置：重新运行安装脚本
+
+> **说明**：`install-gemini.sh` / `sync-config.sh` 会自动检测并同时为新版 Antigravity CLI（`~/.gemini/config`）和旧版 Gemini CLI（`~/.gemini`）配置规则和 Skills。
 
 #### Cursor
 
@@ -171,10 +174,11 @@ cd cc-use-exp
 tools\sync-config.bat
 ```
 
-脚本会自动同步五套配置：
+脚本会自动同步六套工具配置：
 
 - `.claude/` → `~/.claude/`
-- `.gemini/` → `~/.gemini/`
+- `.antigravity/` → `~/.gemini/config/` (Antigravity CLI 全局配置)
+- `.gemini/` → `~/.gemini/` (旧版 Gemini CLI)
 - `.codex/global/AGENTS.md` → `~/.codex/AGENTS.md`（受管区块合并）
 - `.codex/global/rules/` → `~/.codex/rules/`
 - `.codex/instructions/*.md` → `~/.codex/instructions/`
@@ -197,6 +201,7 @@ tools\sync-config.bat
 各工具的部署特性：
 
 - **Claude Code**：同步到 `~/.claude/`，并保留历史对话记录和个人配置
+- **Antigravity CLI**：将项目级的 `.antigravity/` 模板同步到全局的 `~/.gemini/config/`，以供所有项目复用。注意：项目本身的配置源已隔离到独立目录避免冲突。
 - **Gemini CLI**：同步到 `~/.gemini/`，并保留认证信息（如 `oauth_creds.json`）和运行时数据
 - **Codex**：对 `~/.codex/AGENTS.md` 使用受管区块合并；增量管理 `~/.codex/rules/`、`~/.codex/instructions/`、`~/.codex/{profile}.config.toml` 与 `~/.agents/skills/` 下当前项目同步出去的受管内容；不改用户已有默认模型、provider 或 `base_url`
 - **Cursor**：项目内 `.cursor/rules/` 仍是主路径；脚本会把 skills、templates 和命令式技能兼容层同步到用户级目录，并将 `.cursor/rules/*.mdc` 兼容性同步到 `~/.cursor/rules/`；保留 `~/.cursor` 下的 settings、extensions、cache 等运行态文件
@@ -205,10 +210,10 @@ tools\sync-config.bat
 
 ### 维护：跨平台 skill 单向同步
 
-新增/更新 skill 时，先在 `.claude/skills/` 编写权威版本，再用 `tools/sync-skill.sh` 单向同步到 Gemini / Cursor / Codex / Copilot：
+新增/更新 skill 时，先在 `.claude/skills/` 编写权威版本，再用 `tools/sync-skill.sh` 单向同步到 Antigravity / Gemini / Cursor / Codex / Copilot：
 
 ```bash
-./tools/sync-skill.sh                       # 同步全部 Claude skill 到 4 平台
+./tools/sync-skill.sh                       # 同步全部 Claude skill 到 6 个目标平台
 ./tools/sync-skill.sh redis-safety          # 只同步指定 skill
 ./tools/sync-skill.sh --target codex        # 只同步到指定平台
 ./tools/sync-skill.sh --dry-run             # 仅打印计划，不实际操作
@@ -219,6 +224,7 @@ tools\sync-config.bat
 
 | 平台 | 目标路径 | 适配 |
 |------|---------|------|
+| Antigravity | `.antigravity/skills/{name}/` | 直接 cp 且清理冗余 frontmatter |
 | Gemini | `.gemini/skills/{name}/` | 直接 cp |
 | Cursor | `.cursor/skills/{name}/` | 直接 cp |
 | Codex | `.codex/skills/cc-{name}/` | 加 `cc-` 前缀，自动替换内部跨 skill 引用，生成 `agents/openai.yaml` |
@@ -236,6 +242,7 @@ tools\sync-config.bat
 | 工具 | 配置目录 | 部署位置 | 安装方式 | 状态 |
 |------|---------|---------|---------|------|
 | Claude Code | `.claude/` | `~/.claude/` | 会话内或 Plugin | ✅ 完整支持 |
+| Antigravity | `.antigravity/` | `~/.gemini/config/` | Shell 脚本 | ✅ 完整支持 |
 | Codex | `.codex/` | `~/.codex/` + `~/.agents/skills/` | 会话内或 Shell | ✅ 完整支持（增量部署） |
 | Gemini CLI | `.gemini/` | `~/.gemini/` | Shell 脚本 | ✅ 完整支持 |
 | Cursor | `.cursor/` | 项目内 + 用户级 | Shell 脚本 | ✅ 完整支持 |
@@ -284,6 +291,7 @@ tools\sync-config.bat
 ```
 本项目                      用户目录                               其他项目
 ├── .claude/  ──覆盖──>    ~/.claude/  <──读取──                 .claude/ (空)
+├── .antigravity/ ──覆盖──> ~/.gemini/config/ <──读取──          (无，直接读取全局)
 ├── .gemini/  ──覆盖──>    ~/.gemini/  <──读取──                 .gemini/ (空)
 ├── .codex/   ──增量部署──> ~/.codex/ + ~/.agents/skills/ <──读取── .codex/ (空)
 ├── .cursor/  ──项目内 rules + 用户级兼容同步──> ~/.cursor/skills/ + ~/.cursor/templates/ <──读取── .cursor/ (空)
@@ -299,7 +307,8 @@ tools\sync-config.bat
 | 目录 | 服务对象 | 说明 |
 |------|---------|------|
 | `.claude/` | Claude Code | Anthropic 的 CLI 工具 |
-| `.gemini/` | Gemini CLI | Google 的 CLI 工具 |
+| `.antigravity/` | Antigravity CLI | Google 最新多 Agent 协同终端配置源 |
+| `.gemini/` | Gemini CLI | Google 的旧版 CLI 工具 |
 | `.codex/` | Codex | OpenAI 的 CLI 工具，项目内维护权威源，部署时分发到 `~/.codex/` 和 `~/.agents/skills/` |
 | `.github/` + 可选本地 `AGENTS.md` | GitHub Copilot | GitHub Copilot / coding agent 的仓库级配置；若项目本地存在 `AGENTS.md`，可作为额外兜底配置 |
 | `.cursor/` | Cursor | AI IDE，项目内 `.cursor/rules/` 为主；用户级复用 `~/.cursor/skills/`、`~/.cursor/templates/`，并兼容性同步 `~/.cursor/rules/` |
@@ -313,13 +322,13 @@ tools\sync-config.bat
 
 ### 配置能力差异
 
-| 特性 | Claude Code | Gemini CLI | Codex | Cursor |
-|------|-------------|------------|-------|--------|
-| 主配置文件 | `.claude/CLAUDE.md` | `.gemini/GEMINI.md` | `.codex/global/AGENTS.md` → `~/.codex/AGENTS.md` | 无（规则即配置） |
-| 规则目录 | `.claude/rules/` ✅ | `.gemini/rules/` ✅（通过 @import） | `.codex/global/rules/` → `~/.codex/rules/` | `.cursor/rules/` ✅（.mdc 格式） |
-| 技能目录 | `.claude/skills/` ✅ | `.gemini/skills/` ✅（v0.24.0+） | `.codex/skills/` → `~/.agents/skills/` | `.cursor/skills/` ✅ |
-| 命令目录 | `.claude/commands/` (.md) | `.gemini/commands/` (.toml) | 无独立命令目录，使用显式 workflow skills | `.cursor/commands/` (.md) |
-| 命令格式 | Markdown | TOML | `SKILL.md` + `agents/openai.yaml` | Markdown（部署为 SKILL.md） |
+| 特性 | Claude Code | Antigravity | Gemini CLI | Codex | Cursor |
+|------|-------------|------------|------------|-------|--------|
+| 主配置文件 | `.claude/CLAUDE.md` | `.antigravity/AGENTS.md` | `.gemini/GEMINI.md` | `.codex/global/AGENTS.md` → `~/.codex/AGENTS.md` | 无（规则即配置） |
+| 规则目录 | `.claude/rules/` ✅ | 无（通过 @import 合并） | `.gemini/rules/` ✅（通过 @import） | `.codex/global/rules/` → `~/.codex/rules/` | `.cursor/rules/` ✅（.mdc 格式） |
+| 技能目录 | `.claude/skills/` ✅ | `.antigravity/skills/` ✅ | `.gemini/skills/` ✅（v0.24.0+） | `.codex/skills/` → `~/.agents/skills/` | `.cursor/skills/` ✅ |
+| 命令目录 | `.claude/commands/` (.md) | 无独立命令 | `.gemini/commands/` (.toml) | 无独立命令目录，使用显式 workflow skills | `.cursor/commands/` (.md) |
+| 命令格式 | Markdown | 内置 Slash 命令 | TOML | `SKILL.md` + `agents/openai.yaml` | Markdown（部署为 SKILL.md） |
 
 **规则同步方式**：
 - Claude Code：规则拆分到 `rules/` 目录，按文件组织；技能放 `skills/` 按需加载

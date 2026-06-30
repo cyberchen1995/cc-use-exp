@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# sync-skill.sh - 单向同步 Claude skills 到其他 4 平台
+# sync-skill.sh - 单向同步 Claude skills 到其他 5 平台
 #
 # Usage:
 #   ./tools/sync-skill.sh                    # 同步所有 Claude skill
@@ -8,13 +8,12 @@
 #   ./tools/sync-skill.sh --dry-run          # 仅打印计划，不实际操作
 #   ./tools/sync-skill.sh --force            # 覆盖已存在的 skill
 #
-# Codex 长模板保护：
+# Codex agents/openai.yaml 保护：
 #   sync_to_codex 默认生成短模板（interface + policy.allow_implicit_invocation: true），
 #   适用于 safety / dev 类隐式触发 skill。
-#   若目标 .codex/skills/cc-*/agents/openai.yaml 已存在且含 default_prompt
-#   （workflow 类显式触发 skill，如 cc-commit-msg、cc-fix 等），
-#   即使加 --force 也会保留该 yaml 原内容，仅同步 SKILL.md / references 等其他文件。
-#   如需强制重置长模板为短模板，请手动 rm -rf 目标目录后再 sync。
+#   若目标 .codex/skills/cc-*/agents/openai.yaml 已存在，即使加 --force 也会
+#   保留该 yaml 原内容，仅同步 SKILL.md / references 等其他文件。
+#   如需强制重置 yaml，请手动删除目标 agents/openai.yaml 后再 sync。
 #
 # Copilot 人工精简保护：
 #   sync_to_copilot 默认生成 AUTO-GENERATED 长版本（带 <!-- AUTO-GENERATED ... --> 注释）。
@@ -32,6 +31,7 @@ GEMINI_DIR="${REPO_ROOT}/.gemini/skills"
 CURSOR_DIR="${REPO_ROOT}/.cursor/skills"
 CODEX_DIR="${REPO_ROOT}/.codex/skills"
 COPILOT_DIR="${REPO_ROOT}/.github/instructions"
+ANTIGRAVITY_DIR="${REPO_ROOT}/.antigravity/skills"
 
 DRY_RUN=0
 FORCE=0
@@ -72,9 +72,9 @@ while [[ $# -gt 0 ]]; do
 done
 
 case "${TARGET}" in
-    all|gemini|cursor|codex|copilot) ;;
+    all|gemini|cursor|codex|copilot|antigravity) ;;
     *)
-        echo "❌ --target 必须是 all/gemini/cursor/codex/copilot 之一" >&2
+        echo "❌ --target 必须是 all/gemini/cursor/codex/copilot/antigravity 之一" >&2
         exit 1
         ;;
 esac
@@ -124,7 +124,8 @@ normalize_non_claude_skill_text() {
                 -e "s/\`superpowers:brainstorming\`/通用头脑风暴流程/g" \
                 -e "s/\`superpowers:writing-plans\`/通用计划编写流程/g" \
                 -e "s/superpowers 自身的优先级规则/用户显式指令优先原则/g" \
-                -e "s/走通用 systematic-debugging/走通用系统化调试流程/g"
+                -e "s/走通用 systematic-debugging/走通用系统化调试流程/g" \
+                -e "s|\.claude/skills/|~/.agents/skills/|g"
         find "${target_path}" -type f -name '*.bak' -delete
     elif [[ -f "${target_path}" ]]; then
         sed -i.bak \
@@ -133,6 +134,7 @@ normalize_non_claude_skill_text() {
             -e "s/\`superpowers:writing-plans\`/通用计划编写流程/g" \
             -e "s/superpowers 自身的优先级规则/用户显式指令优先原则/g" \
             -e "s/走通用 systematic-debugging/走通用系统化调试流程/g" \
+            -e "s|\.claude/skills/|~/.agents/skills/|g" \
             "${target_path}"
         rm -f "${target_path}.bak"
     fi
@@ -150,6 +152,39 @@ sync_to_gemini() {
     run rm -rf "${dst}"
     run cp -R "${src}" "${dst}"
     [[ "${DRY_RUN}" -eq 1 ]] || normalize_non_claude_skill_text "${dst}"
+}
+
+sync_to_antigravity() {
+    local skill="$1"
+    local src="${SRC_DIR}/${skill}"
+    local dst="${ANTIGRAVITY_DIR}/${skill}"
+
+    should_sync "${dst}" "${skill}" "antigravity" || return 0
+
+    log "📦 Antigravity ← ${skill}"
+    run mkdir -p "${ANTIGRAVITY_DIR}"
+    run rm -rf "${dst}"
+    run cp -R "${src}" "${dst}"
+
+    if [[ "${DRY_RUN}" -eq 0 ]]; then
+        local tmp_file
+        tmp_file="$(mktemp)"
+        awk '
+            BEGIN { in_fm=0; keep=0 }
+            NR==1 && /^---$/ { in_fm=1; print; next }
+            in_fm && /^---$/ { in_fm=0; print; next }
+            in_fm {
+                if ($0 ~ /^(name|description):/) { keep=1; print; next }
+                if ($0 ~ /^[a-zA-Z0-9_-]+:/) { keep=0; next }
+                if (keep) { print }
+                next
+            }
+            { print }
+        ' "${dst}/SKILL.md" > "${tmp_file}"
+        mv "${tmp_file}" "${dst}/SKILL.md"
+
+        normalize_non_claude_skill_text "${dst}"
+    fi
 }
 
 sync_to_cursor() {
@@ -174,10 +209,12 @@ sync_to_codex() {
 
     should_sync "${dst}" "${cc_name}" "codex" || return 0
 
-    local existing_long_yaml=""
-    if [[ -f "${dst}/agents/openai.yaml" ]] && grep -q "default_prompt" "${dst}/agents/openai.yaml"; then
-        existing_long_yaml="$(cat "${dst}/agents/openai.yaml")"
-        log "🛡️  保护 codex/${cc_name}/agents/openai.yaml（含 default_prompt，长模板需人工维护，将保留原内容）"
+    local preserve_openai_yaml=0
+    local existing_openai_yaml=""
+    if [[ -f "${dst}/agents/openai.yaml" ]]; then
+        preserve_openai_yaml=1
+        existing_openai_yaml="$(cat "${dst}/agents/openai.yaml")"
+        log "🛡️  保护 codex/${cc_name}/agents/openai.yaml（已存在，将保留原内容）"
     fi
 
     log "📦 Codex ← ${cc_name}"
@@ -185,11 +222,29 @@ sync_to_codex() {
     run rm -rf "${dst}"
     run cp -R "${src}" "${dst}"
 
+    if [[ "${DRY_RUN}" -eq 0 ]]; then
+        local tmp_file
+        tmp_file="$(mktemp)"
+        awk '
+            BEGIN { in_fm=0; keep=0 }
+            NR==1 && /^---$/ { in_fm=1; print; next }
+            in_fm && /^---$/ { in_fm=0; print; next }
+            in_fm {
+                if ($0 ~ /^(name|description):/) { keep=1; print; next }
+                if ($0 ~ /^[a-zA-Z0-9_-]+:/) { keep=0; next }
+                if (keep) { print }
+                next
+            }
+            { print }
+        ' "${dst}/SKILL.md" > "${tmp_file}"
+        mv "${tmp_file}" "${dst}/SKILL.md"
+    fi
+
     if [[ "${DRY_RUN}" -eq 1 ]]; then
         log "  - frontmatter name 改为 ${cc_name}"
         log "  - 替换内部跨 skill 引用为 cc- 前缀"
-        if [[ -n "${existing_long_yaml}" ]]; then
-            log "  - 保留原 agents/openai.yaml（长模板）"
+        if [[ "${preserve_openai_yaml}" -eq 1 ]]; then
+            log "  - 保留原 agents/openai.yaml"
         else
             log "  - 生成 agents/openai.yaml（短模板）"
         fi
@@ -219,8 +274,8 @@ sync_to_codex() {
     rm -f "${dst}/SKILL.md.bak"
 
     mkdir -p "${dst}/agents"
-    if [[ -n "${existing_long_yaml}" ]]; then
-        printf '%s\n' "${existing_long_yaml}" > "${dst}/agents/openai.yaml"
+    if [[ "${preserve_openai_yaml}" -eq 1 ]]; then
+        printf '%s\n' "${existing_openai_yaml}" > "${dst}/agents/openai.yaml"
     else
         local desc
         desc="$(awk '/^description:/{sub(/^description: */,""); print; exit}' "${src}/SKILL.md")"
@@ -291,11 +346,13 @@ sync_one_skill() {
     local skill="$1"
     case "${TARGET}" in
         all)
+            sync_to_antigravity "${skill}"
             sync_to_gemini "${skill}"
             sync_to_cursor "${skill}"
             sync_to_codex "${skill}"
             sync_to_copilot "${skill}"
             ;;
+        antigravity) sync_to_antigravity "${skill}" ;;
         gemini)  sync_to_gemini "${skill}" ;;
         cursor)  sync_to_cursor "${skill}" ;;
         codex)   sync_to_codex "${skill}" ;;
@@ -322,6 +379,21 @@ main() {
 
     log ""
     log "✅ 完成"
+
+    if [[ "${TARGET}" == "codex" || "${TARGET}" == "all" ]]; then
+        if [[ "${DRY_RUN}" -eq 0 ]]; then
+            log "🔎 运行 Codex 后置校验..."
+            if command -v rg >/dev/null 2>&1; then
+                log "  - 检查遗漏的特定平台字符串:"
+                rg "superpowers|\.claude/skills|^version:|^paths:" "${CODEX_DIR}" || log "    ✓ 未发现残留"
+            else
+                log "  - 检查遗漏的特定平台字符串 (grep):"
+                grep -rE "superpowers|\.claude/skills|^version:|^paths:" "${CODEX_DIR}" || log "    ✓ 未发现残留"
+            fi
+            log "  - Git 空白符检查:"
+            git diff --check -- "${CODEX_DIR}"
+        fi
+    fi
 }
 
 main

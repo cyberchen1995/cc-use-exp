@@ -23,6 +23,7 @@ publish.sh
 /AGENTS.override.md
 .codex/global/AGENTS.override.md
 .gemini/GEMINI.local.md
+.agents/
 
 .claude/templates/CLAUDE.local.md.template
 .gemini/templates/GEMINI.local.md.template
